@@ -10,14 +10,19 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class DatabaseConfig(BaseModel):
     """Database instance configuration"""
 
-    id: str = Field(..., description="Unique database ID")
+    id: Optional[str] = Field(None, description="Unique database ID")
     type: Literal["mysql", "postgresql"] = Field(..., description="Database type")
     host: str = Field(..., description="Database hostname")
     port: int = Field(ge=1, le=65535, description="Database port")
+    username: Optional[str] = Field(None, description="Database username")
+    password: Optional[str] = Field(None, description="Database password")
+    database: Optional[str] = Field(None, description="Default database")
+    credential_name: Optional[str] = Field(None, description="Credential name for encrypted credentials")
     enabled: bool = Field(default=True, description="Enable backup for this DB")
     exclude_databases: list[str] = Field(
         default_factory=list, description="Databases to exclude from backup"
     )
+    ssl: bool = Field(default=False, description="Enable SSL/TLS (simplified)")
     ssl_enabled: bool = Field(default=False, description="Enable SSL/TLS")
     ssl_ca_cert: Optional[Path] = Field(None, description="SSL CA certificate path")
 
@@ -36,6 +41,14 @@ class DatabaseConfig(BaseModel):
 class StorageConfig(BaseModel):
     """Storage configuration"""
 
+    type: Literal["local", "s3"] = Field(default="local", description="Storage type")
+    path: Optional[str] = Field(None, description="Local storage path")
+    bucket: Optional[str] = Field(None, description="S3 bucket name")
+    region: Optional[str] = Field(None, description="S3 region")
+    access_key: Optional[str] = Field(None, description="S3 access key")
+    secret_key: Optional[str] = Field(None, description="S3 secret key")
+    prefix: Optional[str] = Field(None, description="S3 key prefix")
+    
     base_path: Path = Field(
         default=Path("/var/backups/vya_backupdb"), description="Base path for backups"
     )
@@ -49,6 +62,13 @@ class StorageConfig(BaseModel):
     checksum_algorithm: Literal["md5", "sha256"] = Field(
         default="sha256", description="Checksum algorithm"
     )
+
+
+class BackupConfig(BaseModel):
+    """Backup operation configuration"""
+    
+    retention_days: int = Field(ge=1, default=7, description="Days to retain backups")
+    compression: Optional[Literal["gzip", "bzip2"]] = Field(None, description="Compression method")
 
 
 class RetentionConfig(BaseModel):

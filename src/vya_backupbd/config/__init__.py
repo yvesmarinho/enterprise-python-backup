@@ -7,6 +7,7 @@ from vya_backupbd.config.models import (
     RetentionConfig,
     StorageConfig,
 )
+from vya_backupbd.config.loader import load_config, VyaBackupConfig
 
 __all__ = [
     "AppConfig",
@@ -14,4 +15,6 @@ __all__ = [
     "LoggingConfig",
     "RetentionConfig",
     "StorageConfig",
+    "load_config",
+    "VyaBackupConfig",
 ]

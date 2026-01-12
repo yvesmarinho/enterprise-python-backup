@@ -84,3 +84,65 @@ def decrypt_dict(encrypted_data: dict[str, str]) -> dict[str, str]:
         dict: Dictionary with decrypted values
     """
     return {key: decrypt_string(value) for key, value in encrypted_data.items()}
+
+
+class EncryptionManager:
+    """
+    Encryption manager class for consistent interface.
+    
+    Provides hostname-based encryption/decryption using Fernet.
+    """
+    
+    def __init__(self):
+        """Initialize encryption manager."""
+        self._key = get_hostname_key()
+        self._fernet = Fernet(self._key)
+    
+    def encrypt_string(self, plaintext: str) -> str:
+        """
+        Encrypt a string.
+        
+        Args:
+            plaintext: String to encrypt
+            
+        Returns:
+            str: Encrypted string
+        """
+        return encrypt_string(plaintext)
+    
+    def decrypt_string(self, encrypted: str) -> str:
+        """
+        Decrypt a string.
+        
+        Args:
+            encrypted: Encrypted string
+            
+        Returns:
+            str: Decrypted string
+        """
+        return decrypt_string(encrypted)
+    
+    def encrypt_dict(self, data: dict[str, str]) -> dict[str, str]:
+        """
+        Encrypt all values in a dictionary.
+        
+        Args:
+            data: Dictionary to encrypt
+            
+        Returns:
+            dict: Dictionary with encrypted values
+        """
+        return encrypt_dict(data)
+    
+    def decrypt_dict(self, encrypted_data: dict[str, str]) -> dict[str, str]:
+        """
+        Decrypt all values in a dictionary.
+        
+        Args:
+            encrypted_data: Dictionary with encrypted values
+            
+        Returns:
+            dict: Dictionary with decrypted values
+        """
+        return decrypt_dict(encrypted_data)
+

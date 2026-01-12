@@ -34,8 +34,12 @@ def sample_config_dict() -> dict:
                 "type": "mysql",
                 "host": "localhost",
                 "port": 3306,
+                "username": "testuser",
+                "password": "testpass",
+                "database": "testdb",
                 "enabled": True,
                 "exclude_databases": [],
+                "ssl": False,
                 "ssl_enabled": False,
             }
         ],
@@ -59,3 +63,40 @@ def sample_config_dict() -> dict:
             "file_path": "/tmp/app.log",
         },
     }
+
+
+@pytest.fixture
+def sample_mysql_config():
+    """Sample MySQL database configuration."""
+    from vya_backupbd.config.models import DatabaseConfig
+    
+    return DatabaseConfig(
+        id="test-mysql-01",
+        type="mysql",
+        host="localhost",
+        port=3306,
+        username="testuser",
+        password="testpass",
+        database="testdb",
+        ssl=False,
+        ssl_enabled=False
+    )
+
+
+@pytest.fixture
+def sample_postgresql_config():
+    """Sample PostgreSQL database configuration."""
+    from vya_backupbd.config.models import DatabaseConfig
+    
+    return DatabaseConfig(
+        id="test-pg-01",
+        type="postgresql",
+        host="localhost",
+        port=5432,
+        username="testuser",
+        password="testpass",
+        database="testdb",
+        ssl=False,
+        ssl_enabled=False
+    )
+

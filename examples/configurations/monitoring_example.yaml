@@ -1,0 +1,213 @@
+# Monitoring Configuration Example
+# Phase 9 - Monitoring & Notifications System
+# 
+# This example shows how to configure metrics collection, alerts, and notifications
+# with multiple recipients for different notification types (success vs failure/alerts)
+
+monitoring:
+  # Metrics collection for Prometheus
+  metrics:
+    enabled: true
+    # Metrics are collected in memory and exposed via to_prometheus() method
+    # External Prometheus server should scrape these metrics
+
+  # Alert rules configuration
+  alerts:
+    enabled: true
+    
+    rules:
+      # Alert when backup duration exceeds threshold
+      - name: "backup_duration_warning"
+        description: "Backup taking too long"
+        severity: WARNING
+        cooldown_seconds: 900  # 15 minutes
+        conditions:
+          - metric_name: "duration_seconds"
+            threshold_type: GT  # Greater Than
+            threshold_value: 300.0  # 5 minutes
+      
+      # Alert when backup fails
+      - name: "backup_failure_critical"
+        description: "Backup operation failed"
+        severity: CRITICAL
+        cooldown_seconds: 300  # 5 minutes
+        conditions:
+          - metric_name: "success"
+            threshold_type: EQ  # Equals
+            threshold_value: 0  # false
+      
+      # Alert when backup size is unusually large
+      - name: "backup_size_warning"
+        description: "Backup size exceeds expected threshold"
+        severity: WARNING
+        cooldown_seconds: 1800  # 30 minutes
+        conditions:
+          - metric_name: "backup_size_bytes"
+            threshold_type: GT
+            threshold_value: 10737418240  # 10 GB
+      
+      # Alert when restore duration exceeds threshold
+      - name: "restore_duration_warning"
+        description: "Restore taking too long"
+        severity: WARNING
+        cooldown_seconds: 900
+        conditions:
+          - metric_name: "duration_seconds"
+            threshold_type: GT
+            threshold_value: 600.0  # 10 minutes
+      
+      # Alert when restore fails
+      - name: "restore_failure_critical"
+        description: "Restore operation failed"
+        severity: CRITICAL
+        cooldown_seconds: 300
+        conditions:
+          - metric_name: "success"
+            threshold_type: EQ
+            threshold_value: 0
+
+  # Notification configuration with multiple recipients
+  notifications:
+    enabled: true
+    
+    # Notification channels
+    channels:
+      # Email channel via SMTP
+      email:
+        enabled: true
+        smtp_host: "smtp.gmail.com"
+        smtp_port: 587
+        smtp_user: "backups@example.com"
+        smtp_password: "${SMTP_PASSWORD}"  # Use environment variable
+        use_tls: true
+        from_address: "backups@example.com"
+      
+      # Slack channel via webhook
+      slack:
+        enabled: true
+        webhook_url: "${SLACK_WEBHOOK_URL}"  # Use environment variable
+      
+      # Generic webhook for custom integrations
+      webhook:
+        enabled: true
+        url: "${WEBHOOK_URL}"  # Use environment variable
+        method: "POST"
+        headers:
+          Content-Type: "application/json"
+          Authorization: "Bearer ${WEBHOOK_TOKEN}"
+    
+    # Recipients configuration
+    # Each recipient can receive specific notification types
+    recipients:
+      # DevOps team receives SUCCESS notifications
+      - name: "DevOps Team - Success"
+        notification_types:
+          - SUCCESS
+        channels:
+          - type: email
+            address: "devops@example.com"
+          - type: slack
+            webhook_url: "${SLACK_DEVOPS_SUCCESS_WEBHOOK}"
+      
+      # On-call team receives FAILURE and ALERT notifications
+      - name: "On-Call Team - Failures & Alerts"
+        notification_types:
+          - FAILURE
+          - ALERT
+        channels:
+          - type: email
+            address: "oncall@example.com"
+          - type: slack
+            webhook_url: "${SLACK_ONCALL_ALERTS_WEBHOOK}"
+          - type: webhook
+            url: "${PAGERDUTY_WEBHOOK_URL}"
+      
+      # Manager receives only CRITICAL alerts
+      - name: "Manager - Critical Alerts Only"
+        notification_types:
+          - ALERT
+        alert_severity_filter:
+          - CRITICAL
+        channels:
+          - type: email
+            address: "manager@example.com"
+      
+      # Monitoring dashboard receives all notifications
+      - name: "Monitoring Dashboard"
+        notification_types:
+          - SUCCESS
+          - FAILURE
+          - ALERT
+        channels:
+          - type: webhook
+            url: "${DASHBOARD_WEBHOOK_URL}"
+
+# Usage Example in Python Code:
+#
+# from vya_backupbd.monitoring import (
+#     MetricsCollector, AlertManager, NotificationManager,
+#     AlertRule, AlertCondition, ThresholdType, AlertSeverity,
+#     NotificationRecipient, NotificationType,
+#     EmailChannel, SlackChannel, WebhookChannel
+# )
+# from vya_backupbd.backup.executor import BackupExecutor
+#
+# # Initialize monitoring components
+# metrics_collector = MetricsCollector()
+#
+# # Configure alert rules
+# alert_manager = AlertManager()
+# alert_manager.add_rule(AlertRule(
+#     name="backup_duration_warning",
+#     description="Backup taking too long",
+#     severity=AlertSeverity.WARNING,
+#     conditions=[AlertCondition(
+#         metric_name="duration_seconds",
+#         threshold_type=ThresholdType.GT,
+#         threshold_value=300.0
+#     )],
+#     cooldown_seconds=900
+# ))
+#
+# # Configure notification channels
+# notification_manager = NotificationManager()
+# notification_manager.add_channel(
+#     "email",
+#     EmailChannel(
+#         smtp_host="smtp.gmail.com",
+#         smtp_port=587,
+#         smtp_user="backups@example.com",
+#         smtp_password=os.getenv("SMTP_PASSWORD"),
+#         use_tls=True,
+#         from_address="backups@example.com"
+#     )
+# )
+#
+# # Configure recipients
+# notification_manager.add_recipient(NotificationRecipient(
+#     name="DevOps Success",
+#     email="devops@example.com",
+#     notification_types=[NotificationType.SUCCESS]
+# ))
+#
+# notification_manager.add_recipient(NotificationRecipient(
+#     name="On-Call Alerts",
+#     email="oncall@example.com",
+#     slack_webhook=os.getenv("SLACK_ONCALL_WEBHOOK"),
+#     notification_types=[NotificationType.FAILURE, NotificationType.ALERT]
+# ))
+#
+# # Create executor with monitoring
+# executor = BackupExecutor(
+#     strategy_name="full",
+#     metrics_collector=metrics_collector,
+#     alert_manager=alert_manager,
+#     notification_manager=notification_manager
+# )
+#
+# # Execute backup - metrics, alerts, and notifications happen automatically
+# success = executor.execute(backup_context)
+#
+# # Export metrics for Prometheus scraping
+# prometheus_metrics = metrics_collector.to_prometheus()
+# # Serve these metrics via HTTP endpoint for Prometheus to scrape

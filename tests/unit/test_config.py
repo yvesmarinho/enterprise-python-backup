@@ -25,6 +25,8 @@ class TestDatabaseConfig:
             type="mysql",
             host="localhost",
             port=3306,
+            username="testuser",
+            password="testpass",
         )
         assert config.id == "test-mysql"
         assert config.type == "mysql"
@@ -40,6 +42,8 @@ class TestDatabaseConfig:
             type="postgresql",
             host="localhost",
             port=5432,
+            username="testuser",
+            password="testpass",
         )
         assert config.type == "postgresql"
         # Should auto-add PostgreSQL system databases
@@ -54,6 +58,8 @@ class TestDatabaseConfig:
                 type="mysql",
                 host="localhost",
                 port=99999,  # Invalid port
+                username="testuser",
+                password="testpass",
             )
 
     def test_custom_exclude_databases(self) -> None:
@@ -63,6 +69,8 @@ class TestDatabaseConfig:
             type="mysql",
             host="localhost",
             port=3306,
+            username="testuser",
+            password="testpass",
             exclude_databases=["custom_db"],
         )
         # Should have both custom and system databases
@@ -162,6 +170,9 @@ class TestAppConfig:
                         "type": "mysql",
                         "host": "localhost",
                         "port": 3306,
+                        "username": "testuser",
+                        "password": "testpass",
+                        "database": "testdb",
                     }
                 ],
             )

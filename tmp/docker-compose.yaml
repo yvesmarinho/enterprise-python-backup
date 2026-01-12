@@ -1,0 +1,41 @@
+services:
+  postgresql:
+    image: postgres:18-alpine3.21
+    container_name: postgresql
+    env_file:
+      - .env
+    environment:
+      - POSTGRESQL_USERNAME=${POSTGRESQL_USERNAME}
+      - POSTGRESQL_PASSWORD=${POSTGRESQL_PASSWORD}
+      - POSTGRESQL_DATABASE=snippets_db
+      - POSTGRESQL_POSTGRES_PASSWORD=${POSTGRESQL_POSTGRES_PASSWORD}
+      - POSTGRES_PASSWORD=${POSTGRESQL_POSTGRES_PASSWORD}
+      - PASSWORD=${PASSWORD}
+      - USER=${USER}
+      - POSTGRES_USER=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgresql_data:/var/lib/postgresql
+      - ./reset-password.sh:/docker-entrypoint-initdb.d/reset-password.sh:ro
+    networks:
+      - app-network
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres && (psql -U postgres -c \"ALTER USER postgres WITH PASSWORD '${POSTGRESQL_POSTGRES_PASSWORD}';\" > /dev/null 2>&1 || true)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+networks:
+  app-network:
+    external: true
+
+volumes:
+  postgresql_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/yves_marinho/Documentos/DevOps/docker/postgres/postgres_data/
