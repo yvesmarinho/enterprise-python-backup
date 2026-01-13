@@ -12,6 +12,7 @@ from sqlalchemy import text
 
 from vya_backupbd.config.models import DatabaseConfig
 from vya_backupbd.db.base import DatabaseAdapter
+from vya_backupbd.utils.log_sanitizer import safe_repr
 
 logger = logging.getLogger(__name__)
 
@@ -40,10 +41,14 @@ class MySQLAdapter(DatabaseAdapter):
         Raises:
             ValueError: If config type is not 'mysql'
         """
+        logger.debug(f"=== Função: __init__ (MySQLAdapter) ===")
+        logger.debug(f"==> PARAM: config TYPE: {type(config)}, CONTENT: {safe_repr(config)}")
+        
         if config.type != "mysql":
             raise ValueError(f"MySQL adapter requires type='mysql', got '{config.type}'")
             
         super().__init__(config)
+        logger.debug(f"=== Término Função: __init__ (MySQLAdapter) ===")
     
     def get_databases(self) -> list[str]:
         """
@@ -52,6 +57,8 @@ class MySQLAdapter(DatabaseAdapter):
         Returns:
             List of database names (excluding system databases)
         """
+        logger.debug(f"=== Função: get_databases (MySQLAdapter) ===")
+        
         try:
             query = text("SHOW DATABASES")
             result = self._execute_query(query)
@@ -63,10 +70,12 @@ class MySQLAdapter(DatabaseAdapter):
             user_databases = self.filter_system_databases(all_databases)
             
             logger.debug(f"Found {len(user_databases)} user databases")
+            logger.debug(f"=== Término Função: get_databases (MySQLAdapter) ===")
             return user_databases
             
         except Exception as e:
             logger.error(f"Error getting databases: {e}")
+            logger.debug(f"=== Término Função: get_databases (MySQLAdapter) COM ERRO ===")
             raise
     
     def test_connection(self) -> bool:
@@ -76,13 +85,17 @@ class MySQLAdapter(DatabaseAdapter):
         Returns:
             True if connection successful, False otherwise
         """
+        logger.debug(f"=== Função: test_connection (MySQLAdapter) ===")
+        
         try:
             query = text("SELECT 1")
             result = self._execute_query(query)
+            logger.debug(f"=== Término Função: test_connection (MySQLAdapter) ===")
             return len(result) > 0
             
         except Exception as e:
             logger.error(f"Connection test failed: {e}")
+            logger.debug(f"=== Término Função: test_connection (MySQLAdapter) COM ERRO ===")
             return False
     
     def get_backup_command(self, database: str, output_path: str) -> str:
@@ -96,6 +109,10 @@ class MySQLAdapter(DatabaseAdapter):
         Returns:
             mysqldump command string
         """
+        logger.debug(f"=== Função: get_backup_command (MySQLAdapter) ===")
+        logger.debug(f"==> PARAM: database TYPE: {type(database)}, SIZE: {len(database)} chars, CONTENT: {database}")
+        logger.debug(f"==> PARAM: output_path TYPE: {type(output_path)}, SIZE: {len(output_path)} chars, CONTENT: {output_path}")
+        
         # Build mysqldump command with options
         cmd_parts = [
             "mysqldump",
@@ -109,6 +126,8 @@ class MySQLAdapter(DatabaseAdapter):
             "--triggers",  # Include triggers
             "--events",  # Include events
             "--add-drop-database",  # Add DROP DATABASE before CREATE
+            "--set-gtid-purged=OFF",  # Disable GTID info to avoid restore issues
+            "--force",  # Continue even if SQL errors occur
         ]
         
         # Add SSL if enabled
@@ -127,6 +146,7 @@ class MySQLAdapter(DatabaseAdapter):
         else:
             command = f"{command} > {output_path}"
         
+        logger.debug(f"=== Término Função: get_backup_command (MySQLAdapter) ===")
         return command
     
     def backup_database(self, database: str, output_path: str) -> bool:
@@ -140,6 +160,10 @@ class MySQLAdapter(DatabaseAdapter):
         Returns:
             True if backup successful, False otherwise
         """
+        logger.debug(f"=== Função: backup_database (MySQLAdapter) ===")
+        logger.debug(f"==> PARAM: database TYPE: {type(database)}, SIZE: {len(database)} chars, CONTENT: {database}")
+        logger.debug(f"==> PARAM: output_path TYPE: {type(output_path)}, SIZE: {len(output_path)} chars, CONTENT: {output_path}")
+        
         try:
             command = self.get_backup_command(database, output_path)
             
@@ -156,21 +180,161 @@ class MySQLAdapter(DatabaseAdapter):
             
             if result.returncode == 0:
                 logger.info(f"Backup completed successfully: {database}")
+                logger.debug(f"=== Término Função: backup_database (MySQLAdapter) ===")
                 return True
             else:
                 logger.error(f"Backup failed: {result.stderr}")
+                logger.debug(f"=== Término Função: backup_database (MySQLAdapter) COM ERRO ===")
                 return False
                 
         except subprocess.CalledProcessError as e:
             logger.error(f"Backup command failed: {e}")
+            logger.debug(f"=== Término Função: backup_database (MySQLAdapter) COM ERRO ===")
             return False
             
         except subprocess.TimeoutExpired:
             logger.error(f"Backup timeout exceeded for database: {database}")
+            logger.debug(f"=== Término Função: backup_database (MySQLAdapter) COM ERRO ===")
             return False
             
         except Exception as e:
             logger.error(f"Unexpected error during backup: {e}")
+            logger.debug(f"=== Término Função: backup_database (MySQLAdapter) COM ERRO ===")
+            return False
+    
+    def restore_database(self, database: str, backup_file: str) -> bool:
+        """
+        Restore MySQL database from backup file.
+        
+        Args:
+            database: Name of database to restore
+            backup_file: Path to backup file (.sql or .sql.gz)
+            
+        Returns:
+            True if restore successful, False otherwise
+        """
+        logger.debug(f"=== Função: restore_database (MySQLAdapter) ===")
+        logger.debug(f"==> PARAM: database TYPE: {type(database)}, SIZE: {len(database)} chars, CONTENT: {database}")
+        logger.debug(f"==> PARAM: backup_file TYPE: {type(backup_file)}, SIZE: {len(backup_file)} chars, CONTENT: {backup_file}")
+        
+        try:
+            logger.info(f"Starting restore of database '{database}' from '{backup_file}'")
+            
+            # Create database if it doesn't exist
+            logger.debug(f"Creating database '{database}' if not exists")
+            create_cmd = [
+                "mysql",
+                f"--user={self.config.username}",
+                f"--password={self.config.password}",
+                f"--host={self.config.host}",
+                f"--port={self.config.port}",
+                "--protocol=TCP",
+                "-e",
+                f"CREATE DATABASE IF NOT EXISTS `{database}` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+            ]
+            
+            create_result = subprocess.run(
+                create_cmd,
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+            
+            if create_result.returncode != 0:
+                logger.warning(f"Database creation warning: {create_result.stderr}")
+            else:
+                logger.debug(f"Database '{database}' ready for restore")
+            
+            # Build mysql command
+            cmd_parts = [
+                "mysql",
+                f"--user={self.config.username}",
+                f"--password={self.config.password}",
+                f"--host={self.config.host}",
+                f"--port={self.config.port}",
+                "--protocol=TCP"
+            ]
+            
+            # Extract original database name from SQL to replace it
+            # Get first line to detect original database name
+            if backup_file.endswith('.zip'):
+                detect_cmd = f"unzip -p {backup_file} | grep -m1 'USE `'"
+            elif backup_file.endswith('.gz'):
+                detect_cmd = f"gunzip < {backup_file} | grep -m1 'USE `'"
+            else:
+                detect_cmd = f"grep -m1 'USE `' {backup_file}"
+            
+            try:
+                detect_result = subprocess.run(
+                    detect_cmd,
+                    shell=True,
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+                original_db = None
+                if detect_result.returncode == 0 and detect_result.stdout:
+                    # Extract database name from "USE `dbname`;"
+                    match = detect_result.stdout.strip()
+                    if 'USE `' in match:
+                        original_db = match.split('`')[1]
+                        logger.debug(f"Detected original database name: {original_db}")
+            except Exception as e:
+                logger.warning(f"Could not detect original database name: {e}")
+                original_db = None
+            
+            # Handle compressed files with sed replacement
+            if backup_file.endswith('.gz'):
+                if original_db and original_db != database:
+                    # Replace database name in SQL
+                    command = f"gunzip < {backup_file} | sed 's/`{original_db}`/`{database}`/g' | {' '.join(cmd_parts)}"
+                else:
+                    command = f"gunzip < {backup_file} | {' '.join(cmd_parts)}"
+            elif backup_file.endswith('.zip'):
+                if original_db and original_db != database:
+                    # Replace database name in SQL
+                    command = f"unzip -p {backup_file} | sed 's/`{original_db}`/`{database}`/g' | {' '.join(cmd_parts)}"
+                else:
+                    command = f"unzip -p {backup_file} | {' '.join(cmd_parts)}"
+            else:
+                if original_db and original_db != database:
+                    command = f"sed 's/`{original_db}`/`{database}`/g' {backup_file} | {' '.join(cmd_parts)}"
+                else:
+                    command = f"{' '.join(cmd_parts)} < {backup_file}"
+            
+            logger.debug(f"Restore command prepared")
+            
+            # Execute restore command
+            result = subprocess.run(
+                command,
+                shell=True,
+                capture_output=True,
+                text=True,
+                timeout=3600  # 1 hour timeout
+            )
+            
+            if result.returncode == 0:
+                logger.info(f"Restore completed successfully: {database}")
+                logger.debug(f"=== Término Função: restore_database (MySQLAdapter) ===")
+                return True
+            else:
+                logger.error(f"Restore failed: {result.stderr}")
+                logger.debug(f"=== Término Função: restore_database (MySQLAdapter) COM ERRO ===")
+                return False
+                
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Restore command failed: {e}")
+            logger.debug(f"=== Término Função: restore_database (MySQLAdapter) COM ERRO ===")
+            return False
+            
+        except subprocess.TimeoutExpired:
+            logger.error(f"Restore timeout exceeded for database: {database}")
+            logger.debug(f"=== Término Função: restore_database (MySQLAdapter) COM ERRO ===")
+            return False
+            
+        except Exception as e:
+            logger.error(f"Unexpected error during restore: {e}")
+            logger.debug(f"=== Término Função: restore_database (MySQLAdapter) COM ERRO ===")
             return False
     
     def _execute_query(self, query: str | Any) -> list[tuple]:

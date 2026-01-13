@@ -68,7 +68,7 @@ class BackupConfig(BaseModel):
     """Backup operation configuration"""
     
     retention_days: int = Field(ge=1, default=7, description="Days to retain backups")
-    compression: Optional[Literal["gzip", "bzip2"]] = Field(None, description="Compression method")
+    compression: Optional[Literal["zip", "gzip", "bzip2"]] = Field(None, description="Compression method")
 
 
 class RetentionConfig(BaseModel):
@@ -90,6 +90,27 @@ class LoggingConfig(BaseModel):
     file_path: Path = Field(default=Path("/var/log/vya_backupdb/app.log"))
 
 
+class EmailConfig(BaseModel):
+    """Email notification configuration"""
+    
+    enabled: bool = Field(default=False, description="Enable email notifications")
+    smtp_host: str = Field(default="smtp.gmail.com", description="SMTP server hostname")
+    smtp_port: int = Field(ge=1, le=65535, default=587, description="SMTP server port")
+    smtp_user: str = Field(default="", description="SMTP username")
+    smtp_password: str = Field(default="", description="SMTP password")
+    use_tls: bool = Field(default=True, description="Use TLS encryption")
+    from_email: str = Field(default="backup@vya.digital", description="From email address")
+    success_recipients: list[str] = Field(
+        default_factory=lambda: ["atendimento@vya.digital"],
+        description="Recipients for success notifications"
+    )
+    failure_recipients: list[str] = Field(
+        default_factory=lambda: ["suporte@vya.digital"],
+        description="Recipients for failure notifications"
+    )
+    test_mode: bool = Field(default=False, description="Add [TESTE] prefix to subject")
+
+
 class AppConfig(BaseSettings):
     """Main application configuration"""
 
@@ -108,6 +129,7 @@ class AppConfig(BaseSettings):
     storage: StorageConfig = Field(default_factory=StorageConfig)
     retention: RetentionConfig = Field(default_factory=RetentionConfig)
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
+    email: EmailConfig = Field(default_factory=EmailConfig)
 
     @classmethod
     def from_yaml(cls, yaml_path: Path) -> "AppConfig":
