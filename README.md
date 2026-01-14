@@ -1,12 +1,12 @@
-# Vya BackupDB - Sistema de Backup de Bancos de Dados
+# Vya BackupDB - Sistema de Backup de Bancos de Dados e Arquivos
 
 ## 📋 Visão Geral do Projeto
 
-Sistema automatizado de backup e restore para bancos de dados MySQL e PostgreSQL, desenvolvido para ambientes enterprise com suporte a múltiplos servidores, notificações, agendamento e monitoramento via Prometheus.
+Sistema automatizado de backup e restore para bancos de dados MySQL, PostgreSQL e **arquivos/diretórios**, desenvolvido para ambientes enterprise com suporte a múltiplos servidores, notificações, agendamento e monitoramento via Prometheus.
 
 **Data de Início da Nova Versão:** 9 de Janeiro de 2026  
-**Versão Atual Analisada:** 0.3.00  
-**Linguagem:** Python 3.11+  
+**Versão Atual Analisada:** 2.0.0  
+**Linguagem:** Python 3.12+  
 **Licença:** GNU GPL v2.0+  
 **Autor:** Yves Marinho - Vya.Digital  
 
@@ -44,6 +44,75 @@ Criar uma versão unificada, moderna e escalável do sistema de backup, consolid
 - ✅ Documentação completa
 - ✅ Sistema de cleanup automatizado
 - ✅ Suporte a containers
+- ✅ **Backup de arquivos e diretórios com glob patterns**
+
+---
+
+## ✨ Funcionalidades Principais
+
+### 🗄️ Backup de Bancos de Dados
+- **MySQL**: Backup completo com mysqldump
+- **PostgreSQL**: Backup completo com pg_dump  
+- Compressão ZIP automática
+- Restore com filtragem SQL inteligente
+- Suporte a múltiplas instâncias
+
+### 📁 Backup de Arquivos (NOVO em v2.0.0)
+- **Glob Patterns**: Use `*`, `**`, `{}` para seleção flexível
+- **Compressão tar.gz**: Automática com preservação de estrutura
+- **Docker Volumes**: Backup de volumes Docker
+- **Configurações**: Backup de arquivos de configuração do sistema
+- **Uploads**: Backup de arquivos enviados por usuários
+- **Restore Flexível**: Restaure para localização original ou customizada
+
+**Exemplo de configuração**:
+```json
+{
+  "id_dbms": 3,
+  "dbms": "files",
+  "host": "localhost",
+  "port": 0,
+  "db_list": [
+    "/docker/volumes/**/*",
+    "/opt/app/config/*.{yaml,json}",
+    "/var/www/uploads/**/*.{jpg,png,pdf}"
+  ],
+  "enabled": true
+}
+```
+
+**Comandos**:
+```bash
+# Backup de arquivos
+vya-backupdb backup --instance 3
+
+# Listar backups de arquivos
+vya-backupdb restore-list --instance 3
+
+# Restaurar para localização customizada
+vya-backupdb restore --file backup.tar.gz --target /tmp/restored
+```
+
+📖 **Guia Completo**: [docs/guides/FILES_BACKUP_GUIDE.md](docs/guides/FILES_BACKUP_GUIDE.md)
+
+### 📧 Notificações
+- Email automático em caso de sucesso ou falha
+- **Detalhes completos** no corpo do email (erros, stack traces, estatísticas)
+- **Anexo automático** do arquivo de log em caso de falha
+- Templates HTML profissionais
+- Suporte SMTP/SSL/TLS
+
+### 🔄 Retenção e Limpeza
+- Políticas de retenção configuráveis (dias)
+- Limpeza automática de backups antigos
+- Dry-run mode para testes seguros
+- Relatórios detalhados de espaço liberado
+
+### 📊 Monitoramento
+- Métricas Prometheus
+- Logs detalhados com sanitização de senhas
+- Status de saúde do sistema
+- Rastreamento de operações
 
 ---
 

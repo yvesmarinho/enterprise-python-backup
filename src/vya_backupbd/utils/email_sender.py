@@ -8,9 +8,12 @@ import logging
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from typing import List, Dict, Any
+from email.mime.base import MIMEBase
+from email import encoders
+from typing import List, Dict, Any, Optional
 from datetime import datetime
 from dataclasses import dataclass
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +106,9 @@ class EmailSender:
         self,
         instance: str,
         failed_databases: List[str],
-        errors: Dict[str, str]
+        errors: Dict[str, str],
+        log_file: Optional[str] = None,
+        additional_info: Optional[Dict[str, Any]] = None
     ) -> bool:
         """
         Send failure notification email.
@@ -112,6 +117,8 @@ class EmailSender:
             instance: Database instance identifier
             failed_databases: List of databases that failed to backup
             errors: Dictionary mapping database names to error messages
+            log_file: Path to log file to attach (optional)
+            additional_info: Additional information to include in email (optional)
             
         Returns:
             True if email sent successfully, False otherwise
@@ -128,10 +135,14 @@ class EmailSender:
         
         try:
             subject = self._build_subject(False)
-            body = self._build_failure_body(instance, failed_databases, errors)
+            body = self._build_failure_body(instance, failed_databases, errors, additional_info)
             recipients = self.config.failure_recipients
             
-            result = self._send_email(recipients, subject, body)
+            attachments = []
+            if log_file and Path(log_file).exists():
+                attachments.append(log_file)
+            
+            result = self._send_email(recipients, subject, body, attachments)
             
             logger.debug(f"=== Término Função: send_failure_notification (EmailSender) ===")
             return result
@@ -214,9 +225,15 @@ class EmailSender:
         self,
         instance: str,
         failed_databases: List[str],
-        errors: Dict[str, str]
+        errors: Dict[str, str],
+        additional_info: Optional[Dict[str, Any]] = None
     ) -> str:
-        """Build failure email body."""
+        """Build failure email body with detailed error information."""
+        # Extract additional info
+        total_attempted = additional_info.get('total_attempted', len(failed_databases)) if additional_info else len(failed_databases)
+        log_file_path = additional_info.get('log_file', 'N/A') if additional_info else 'N/A'
+        execution_time = additional_info.get('execution_time', 'N/A') if additional_info else 'N/A'
+        
         body = f"""
         <html>
         <head>
@@ -225,11 +242,13 @@ class EmailSender:
                 .header {{ background-color: #f44336; color: white; padding: 20px; text-align: center; }}
                 .content {{ padding: 20px; }}
                 .info {{ background-color: #f1f1f1; padding: 15px; margin: 10px 0; border-radius: 5px; }}
+                .warning-box {{ background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 15px 0; }}
                 .error-list {{ list-style-type: none; padding: 0; }}
                 .error-list li {{ padding: 10px; border-bottom: 1px solid #ddd; background-color: #ffebee; margin: 5px 0; border-radius: 3px; }}
                 .error-db {{ font-weight: bold; color: #d32f2f; }}
-                .error-msg {{ color: #666; font-size: 14px; margin-top: 5px; }}
+                .error-msg {{ color: #666; font-size: 14px; margin-top: 5px; font-family: monospace; white-space: pre-wrap; }}
                 .footer {{ color: #666; font-size: 12px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd; }}
+                .attachment-notice {{ background-color: #e3f2fd; padding: 10px; margin: 15px 0; border-left: 4px solid #2196F3; }}
             </style>
         </head>
         <body>
@@ -240,7 +259,15 @@ class EmailSender:
                 <div class="info">
                     <p><strong>Instância:</strong> {instance}</p>
                     <p><strong>Data/Hora:</strong> {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}</p>
+                    <p><strong>Bancos Tentados:</strong> {total_attempted}</p>
                     <p><strong>Bancos com Falha:</strong> {len(failed_databases)}</p>
+                    <p><strong>Tempo de Execução:</strong> {execution_time}</p>
+                    <p><strong>Arquivo de Log:</strong> {log_file_path}</p>
+                </div>
+                
+                <div class="warning-box">
+                    <strong>⚠️ ATENÇÃO:</strong> Falhas no backup podem resultar em perda de dados. 
+                    Verificar e corrigir imediatamente!
                 </div>
                 
                 <h3>Detalhes dos Erros:</h3>
@@ -259,9 +286,19 @@ class EmailSender:
         body += """
                 </ul>
                 
+                <div class="attachment-notice">
+                    <strong>📎 Anexo:</strong> O arquivo de log completo está anexado a este email para análise detalhada.
+                </div>
+                
                 <div class="footer">
-                    <p><strong>Ação Requerida:</strong> Verificar os logs e corrigir os problemas identificados.</p>
-                    <p>Logs disponíveis em: /var/log/enterprise/</p>
+                    <p><strong>⚠️ Ação Requerida:</strong></p>
+                    <ul>
+                        <li>Verificar os detalhes dos erros acima</li>
+                        <li>Analisar o arquivo de log anexado</li>
+                        <li>Corrigir os problemas identificados</li>
+                        <li>Re-executar o backup dos bancos com falha</li>
+                    </ul>
+                    <p>Logs também disponíveis em: /var/log/enterprise/</p>
                     <p>Este é um email automático do sistema VYA BackupDB.</p>
                 </div>
             </div>
@@ -271,7 +308,7 @@ class EmailSender:
         
         return body
     
-    def _send_email(self, recipients: List[str], subject: str, body: str) -> bool:
+    def _send_email(self, recipients: List[str], subject: str, body: str, attachments: Optional[List[str]] = None) -> bool:
         """
         Send email using SMTP.
         
@@ -279,6 +316,7 @@ class EmailSender:
             recipients: List of email addresses
             subject: Email subject
             body: Email body (HTML)
+            attachments: List of file paths to attach (optional)
             
         Returns:
             True if sent successfully, False otherwise
@@ -298,6 +336,27 @@ class EmailSender:
             # Attach HTML body
             html_part = MIMEText(body, 'html', 'utf-8')
             msg.attach(html_part)
+            
+            # Attach files if provided
+            if attachments:
+                for file_path in attachments:
+                    try:
+                        path = Path(file_path)
+                        if path.exists() and path.is_file():
+                            with open(file_path, 'rb') as f:
+                                part = MIMEBase('application', 'octet-stream')
+                                part.set_payload(f.read())
+                                encoders.encode_base64(part)
+                                part.add_header(
+                                    'Content-Disposition',
+                                    f'attachment; filename="{path.name}"'
+                                )
+                                msg.attach(part)
+                                logger.info(f"Attached file: {path.name}")
+                        else:
+                            logger.warning(f"Attachment file not found: {file_path}")
+                    except Exception as e:
+                        logger.error(f"Error attaching file {file_path}: {e}")
             
             # Connect and send
             logger.info(f"Connecting to SMTP server: {self.config.smtp_host}:{self.config.smtp_port}")

@@ -26,6 +26,7 @@ from vya_backupbd.restore.executor import RestoreExecutor
 from vya_backupbd.db.engine import get_connection_string
 from vya_backupbd.db.mysql import MySQLAdapter
 from vya_backupbd.db.postgresql import PostgreSQLAdapter
+from vya_backupbd.db.files import FilesAdapter
 from vya_backupbd.utils.logging_config import setup_logging
 from vya_backupbd.utils.log_sanitizer import safe_repr
 from vya_backupbd.utils.email_sender import EmailSender, EmailConfig as EmailCfg
@@ -40,8 +41,12 @@ console = Console()
 logger = logging.getLogger(__name__)
 
 
-def load_vya_config(config_path: Optional[str] = None) -> VyaBackupConfig:
-    """Load configuration from vya_backupbd.json and setup logging."""
+def load_vya_config(config_path: Optional[str] = None) -> tuple[VyaBackupConfig, str]:
+    """Load configuration from vya_backupbd.json and setup logging.
+    
+    Returns:
+        Tuple of (config, log_file_path)
+    """
     logger.debug(f"=== Função: load_vya_config ===")
     logger.debug(f"==> PARAM: config_path TYPE: {type(config_path)}, CONTENT: {config_path}")
     
@@ -52,14 +57,14 @@ def load_vya_config(config_path: Optional[str] = None) -> VyaBackupConfig:
             config = load_config(None)
         
         # Setup logging based on configuration
-        setup_logging(
+        log_file = setup_logging(
             console_level=config.log_settings.console_loglevel,
             file_level=config.log_settings.file_loglevel,
             log_dir=config.log_settings.log_dir
         )
         
         logger.debug(f"=== Término Função: load_vya_config ===")
-        return config
+        return config, log_file
     except FileNotFoundError:
         console.print("[red]Error:[/red] Configuration file not found")
         console.print("Searched in: ./vya_backupbd.json, project root, /etc/vya_backupdb/")
@@ -128,8 +133,19 @@ def backup(
     
     console.print("[bold blue]VYA BackupDB - Backup Operation[/bold blue]\n")
     
+    # Start execution timer
+    start_time = time.time()
+    
     # Load configuration
-    config = load_vya_config(config_path)
+    config, log_file = load_vya_config(config_path)
+    console.print(f"Log: {log_file}\n")
+    
+    # Ensure backup directories exist
+    Path(config.bkp_system.path_sql).mkdir(parents=True, exist_ok=True)
+    Path(config.bkp_system.path_zip).mkdir(parents=True, exist_ok=True)
+    Path(config.bkp_system.path_files).mkdir(parents=True, exist_ok=True)
+    logger.debug(f"Backup directories ensured: sql={config.bkp_system.path_sql}, zip={config.bkp_system.path_zip}, files={config.bkp_system.path_files}")
+    
     logger.info("=" * 80)
     logger.info("Starting backup operation")
     logger.info(f"Dry-run: {dry_run}, Compression: {compression}")
@@ -172,22 +188,28 @@ def backup(
         else:
             # Backup all databases (excluding db_ignore)
             try:
-                # Use information_schema/postgres to list databases
-                list_db = "information_schema" if db_entry.dbms == "mysql" else "postgres"
-                temp_config = DatabaseConfig(
-                    type=db_entry.dbms,
-                    host=db_entry.host,
-                    port=int(db_entry.port),
-                    username=db_entry.user,
-                    password=db_entry.secret,
-                    database=list_db
-                )
-                from vya_backupbd.backup.strategy import get_database_adapter
-                temp_adapter = get_database_adapter(temp_config)
-                all_databases = temp_adapter.get_databases()
-                databases_to_backup = [db for db in all_databases if db not in db_entry.db_ignore]
-                console.print(f"[cyan]Found {len(databases_to_backup)} databases to backup[/cyan]")
-                logger.info(f"Found {len(databases_to_backup)} databases: {', '.join(databases_to_backup)}")
+                if db_entry.dbms == "files":
+                    # For files, use db_list patterns directly
+                    databases_to_backup = db_entry.db_list if db_entry.db_list else []
+                    console.print(f"[cyan]Found {len(databases_to_backup)} file patterns to backup[/cyan]")
+                    logger.info(f"Found {len(databases_to_backup)} patterns: {', '.join(databases_to_backup)}")
+                else:
+                    # For MySQL/PostgreSQL: list databases via connection
+                    list_db = "information_schema" if db_entry.dbms == "mysql" else "postgres"
+                    temp_config = DatabaseConfig(
+                        type=db_entry.dbms,
+                        host=db_entry.host,
+                        port=int(db_entry.port),
+                        username=db_entry.user,
+                        password=db_entry.secret,
+                        database=list_db
+                    )
+                    from vya_backupbd.backup.strategy import get_database_adapter
+                    temp_adapter = get_database_adapter(temp_config)
+                    all_databases = temp_adapter.get_databases()
+                    databases_to_backup = [db for db in all_databases if db not in db_entry.db_ignore]
+                    console.print(f"[cyan]Found {len(databases_to_backup)} databases to backup[/cyan]")
+                    logger.info(f"Found {len(databases_to_backup)} databases: {', '.join(databases_to_backup)}")
             except Exception as e:
                 console.print(f"[red]Error listing databases:[/red] {e}")
                 logger.error(f"Error listing databases for instance {db_entry.id_dbms}: {e}")
@@ -297,11 +319,24 @@ def backup(
             email_sender = EmailSender(email_cfg)
             
             if fail_count > 0:
+                # Calculate execution time
+                execution_time = time.time() - start_time
+                execution_time_str = f"{int(execution_time // 60)}m {int(execution_time % 60)}s"
+                
+                # Prepare additional info
+                additional_info = {
+                    'total_attempted': success_count + fail_count,
+                    'log_file': log_file,
+                    'execution_time': execution_time_str
+                }
+                
                 logger.info("Sending failure notification email")
                 email_sender.send_failure_notification(
                     instance=current_instance,
                     failed_databases=list(failed_databases.keys()),
-                    errors=failed_databases
+                    errors=failed_databases,
+                    log_file=log_file,
+                    additional_info=additional_info
                 )
                 console.print("[yellow]Failure notification email sent[/yellow]")
             elif success_count > 0:
@@ -338,43 +373,50 @@ def restore_list(
         vya-backupdb restore-list --instance 1 --database mydb
         vya-backupdb restore-list --instance 1 --limit 20
     """
+    from vya_backupbd.utils.backup_manager import BackupManager
+    
     console.print("[bold blue]VYA BackupDB - Available Backups[/bold blue]\n")
     
     # Load configuration
-    config = load_vya_config(config_path)
+    config, _ = load_vya_config(config_path)
     db_entry = get_database_entry(config, instance)
     
-    # Get backup directory
+    # Get backup directory and ensure it exists
     backup_dir = Path(config.bkp_system.path_zip)
+    backup_dir.mkdir(parents=True, exist_ok=True)
+    logger.debug(f"Backup directory ensured: {backup_dir}")
     
-    if not backup_dir.exists():
-        console.print(f"[yellow]Backup directory not found:[/yellow] {backup_dir}")
-        raise typer.Exit(code=0)
-    
-    # Find backup files
-    pattern = f"*{database}*" if database else "*.sql.gz"
-    backups = sorted(backup_dir.glob(pattern), key=lambda p: p.stat().st_mtime, reverse=True)[:limit]
+    # Use BackupManager to list backups
+    manager = BackupManager(str(backup_dir))
+    backups = manager.list_backups(
+        database=database,
+        dbms_type=db_entry.dbms.lower() if db_entry.dbms else None,
+        limit=limit
+    )
     
     if not backups:
         console.print("[yellow]No backups found[/yellow]")
         raise typer.Exit(code=0)
     
     # Display table
-    table = Table(title=f"Backups for Instance {instance}")
-    table.add_column("File", style="cyan")
-    table.add_column("Size", justify="right")
-    table.add_column("Date", style="green")
+    table = Table(title=f"Backups for Instance {instance} ({db_entry.dbms})")
+    table.add_column("Database", style="cyan")
+    table.add_column("File", style="white")
+    table.add_column("Size", justify="right", style="green")
+    table.add_column("Type", justify="center", style="yellow")
+    table.add_column("Date", style="blue")
     
     for backup in backups:
-        size_mb = backup.stat().st_size / (1024 * 1024)
-        mtime = datetime.fromtimestamp(backup.stat().st_mtime)
         table.add_row(
-            backup.name,
-            f"{size_mb:.2f} MB",
-            mtime.strftime("%Y-%m-%d %H:%M:%S")
+            backup.database,
+            backup.filename,
+            manager.format_size(backup.size_bytes),
+            backup.extension.upper(),
+            backup.date.strftime("%Y-%m-%d %H:%M:%S")
         )
     
     console.print(table)
+    console.print(f"\n[dim]Total: {len(backups)} backup(s)[/dim]")
 
 
 @app.command()
@@ -436,7 +478,7 @@ def restore(
         raise typer.Exit(code=0)
     
     # Load configuration
-    config = load_vya_config(config_path)
+    config, _ = load_vya_config(config_path)
     
     # Find the instance
     instance = None
@@ -526,7 +568,7 @@ def config_validate(
     console.print("[bold blue]VYA BackupDB - Configuration Validation[/bold blue]\n")
     
     try:
-        config = load_vya_config(config_path)
+        config, _ = load_vya_config(config_path)
         
         console.print("[green]✓ Configuration file loaded successfully[/green]")
         
@@ -560,7 +602,7 @@ def config_show(
     """
     console.print("[bold blue]VYA BackupDB - Configuration[/bold blue]\n")
     
-    config = load_vya_config(config_path)
+    config, _ = load_vya_config(config_path)
     databases = config.get_enabled_databases()
     
     if format == "json":
@@ -617,7 +659,7 @@ def test_connection(
     """
     console.print("[bold blue]VYA BackupDB - Connection Test[/bold blue]\n")
     
-    config = load_vya_config(config_path)
+    config, _ = load_vya_config(config_path)
     db_entry = get_database_entry(config, instance)
     
     console.print(f"Testing connection to:")

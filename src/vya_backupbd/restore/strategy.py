@@ -11,6 +11,7 @@ from typing import Dict, List, Type
 from vya_backupbd.restore.context import RestoreContext
 from vya_backupbd.db.postgresql import PostgreSQLAdapter
 from vya_backupbd.db.mysql import MySQLAdapter
+from vya_backupbd.db.files import FilesAdapter
 from vya_backupbd.storage.local import LocalStorage
 from vya_backupbd.storage.s3 import S3Storage
 from vya_backupbd.utils.compression import decompress_file
@@ -24,6 +25,8 @@ def get_database_adapter(db_config):
         return PostgreSQLAdapter(db_config)
     elif db_config.type == "mysql":
         return MySQLAdapter(db_config)
+    elif db_config.type == "files":
+        return FilesAdapter(db_config)
     else:
         raise ValueError(f"Unsupported database type: {db_config.type}")
 

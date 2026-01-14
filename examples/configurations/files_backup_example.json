@@ -1,0 +1,118 @@
+{
+  "log_settings": {
+    "console_loglevel": "INFO",
+    "file_loglevel": "DEBUG",
+    "log_dir": "/var/log/enterprise"
+  },
+  "service_settings": {
+    "backup_interval_minutes": 1440
+  },
+  "schedule_settings": {
+    "enabled": true,
+    "days_of_week": [1, 2, 3, 4, 5, 6, 7],
+    "time": "02:00",
+    "timezone": "America/Sao_Paulo"
+  },
+  "prometheus_settings": {
+    "enabled": false,
+    "url": "https://prometheus.example.com/pushgateway",
+    "job_name": "backup-files",
+    "timeout": 30
+  },
+  "email_settings": {
+    "enabled": true,
+    "smtp_host": "smtp.example.com",
+    "smtp_port": 587,
+    "smtp_user": "backup@example.com",
+    "smtp_password": "your-password-here",
+    "use_ssl": false,
+    "use_tls": true,
+    "from_email": "backup@example.com",
+    "success_recipients": ["admin@example.com"],
+    "failure_recipients": ["admin@example.com", "ops@example.com"],
+    "test_mode": false
+  },
+  "db_config": [
+    {
+      "id_dbms": 1,
+      "dbms": "files",
+      "host": "localhost",
+      "port": 0,
+      "user": "",
+      "secret": "",
+      "db_ignore": "",
+      "db_list": [
+        "/docker/volumes/**/*"
+      ],
+      "enabled": true,
+      "comment": "Backup all Docker volumes"
+    },
+    {
+      "id_dbms": 2,
+      "dbms": "files",
+      "host": "localhost",
+      "port": 0,
+      "user": "",
+      "secret": "",
+      "db_ignore": "",
+      "db_list": [
+        "/opt/app/config/*.{yaml,yml,json}",
+        "/opt/app/config/.env"
+      ],
+      "enabled": true,
+      "comment": "Backup application configuration files"
+    },
+    {
+      "id_dbms": 3,
+      "dbms": "files",
+      "host": "localhost",
+      "port": 0,
+      "user": "",
+      "secret": "",
+      "db_ignore": "",
+      "db_list": [
+        "/var/www/html/uploads/**/*.{jpg,jpeg,png,pdf}",
+        "/var/www/html/documents/**/*"
+      ],
+      "enabled": true,
+      "comment": "Backup user uploads and documents"
+    },
+    {
+      "id_dbms": 4,
+      "dbms": "files",
+      "host": "localhost",
+      "port": 0,
+      "user": "",
+      "secret": "",
+      "db_ignore": "",
+      "db_list": [
+        "/home/user/important/**/*",
+        "/backup/archives/**/*.tar.gz"
+      ],
+      "enabled": false,
+      "comment": "Backup personal files (disabled by default)"
+    },
+    {
+      "id_dbms": 5,
+      "dbms": "files",
+      "host": "localhost",
+      "port": 0,
+      "user": "",
+      "secret": "",
+      "db_ignore": "",
+      "db_list": [
+        "/etc/nginx/**/*",
+        "/etc/systemd/system/*.service",
+        "/etc/cron.d/*"
+      ],
+      "enabled": true,
+      "comment": "Backup system configuration files"
+    }
+  ],
+  "bkp_system": {
+    "path_sql": "/backup/sql",
+    "path_zip": "/backup/compressed",
+    "path_files": "/backup/files",
+    "retention_files": 7
+  }
+}

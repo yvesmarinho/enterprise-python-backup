@@ -45,6 +45,11 @@ class DatabaseConfig:
             elif isinstance(data['db_list'], str) and data['db_list']:
                 db_list = [db.strip() for db in data['db_list'].split(',')]
         
+        # Validate dbms type
+        valid_dbms = ['mysql', 'postgresql', 'files']
+        if data['dbms'] not in valid_dbms:
+            raise ValueError(f"Invalid dbms type: {data['dbms']}. Must be one of {valid_dbms}")
+        
         return cls(
             id_dbms=data['id_dbms'],
             dbms=data['dbms'],
@@ -64,6 +69,7 @@ class BackupSystemConfig:
     """Backup system paths configuration."""
     path_sql: str
     path_zip: str
+    path_files: str = "/tmp/bkp_files/"
     retention_files: int = 7
 
 

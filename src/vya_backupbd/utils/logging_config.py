@@ -16,7 +16,7 @@ def setup_logging(
     file_level: str = "DEBUG",
     log_dir: str = "/var/log/enterprise",
     app_name: str = "vya_backupdb"
-) -> None:
+) -> str:
     """
     Setup logging configuration.
     
@@ -25,6 +25,9 @@ def setup_logging(
         file_level: File log level (INFO, DEBUG, WARNING, ERROR)
         log_dir: Directory for log files (default: /var/log/enterprise)
         app_name: Application name for log file
+        
+    Returns:
+        Path to the log file
     """
     # Create log directory if it doesn't exist
     log_path = Path(log_dir)
@@ -71,8 +74,11 @@ def setup_logging(
         root_logger.info(f"VYA BackupDB started - Log file: {log_file}")
         root_logger.info("=" * 80)
         
+        return str(log_file)
+        
     except Exception as e:
         print(f"Warning: Could not create log file {log_file}: {e}", file=sys.stderr)
+        return str(log_file)
 
 
 def get_logger(name: str) -> logging.Logger:

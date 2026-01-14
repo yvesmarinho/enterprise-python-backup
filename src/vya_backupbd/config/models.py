@@ -11,9 +11,9 @@ class DatabaseConfig(BaseModel):
     """Database instance configuration"""
 
     id: Optional[str] = Field(None, description="Unique database ID")
-    type: Literal["mysql", "postgresql"] = Field(..., description="Database type")
+    type: Literal["mysql", "postgresql", "files"] = Field(..., description="Database type")
     host: str = Field(..., description="Database hostname")
-    port: int = Field(ge=1, le=65535, description="Database port")
+    port: int = Field(ge=0, le=65535, description="Database port (0 for files)")
     username: Optional[str] = Field(None, description="Database username")
     password: Optional[str] = Field(None, description="Database password")
     database: Optional[str] = Field(None, description="Default database")

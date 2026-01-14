@@ -14,6 +14,7 @@ from typing import Optional
 from vya_backupbd.backup.context import BackupContext
 from vya_backupbd.db.mysql import MySQLAdapter
 from vya_backupbd.db.postgresql import PostgreSQLAdapter
+from vya_backupbd.db.files import FilesAdapter
 from vya_backupbd.storage.local import LocalStorage
 from vya_backupbd.storage.s3 import S3Storage
 from vya_backupbd.utils.compression import compress_file
@@ -31,6 +32,8 @@ def get_database_adapter(db_config):
         return MySQLAdapter(db_config)
     elif db_config.type == "postgresql":
         return PostgreSQLAdapter(db_config)
+    elif db_config.type == "files":
+        return FilesAdapter(db_config)
     else:
         logger.debug(f"=== Término Função: get_database_adapter ===")
         raise ValueError(f"Unknown database type: {db_config.type}")
@@ -122,7 +125,18 @@ class FullBackupStrategy(BackupStrategy):
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             dbms = context.database_config.type.lower()
             db_name = context.database_config.database
-            filename = f"{timestamp}_{dbms}_{db_name}.sql"
+            
+            # Files backup uses tar.gz, databases use .sql
+            if dbms == "files":
+                # Sanitize pattern to create valid filename
+                # Remove special characters and replace with underscores
+                safe_name = db_name.replace("/", "_").replace("*", "").replace("?", "").replace(":", "_")
+                safe_name = safe_name.replace("{", "").replace("}", "").strip("_")
+                if not safe_name or safe_name == "":
+                    safe_name = "files_backup"
+                filename = f"{timestamp}_{dbms}_{safe_name}.tar.gz"
+            else:
+                filename = f"{timestamp}_{dbms}_{db_name}.sql"
             
             # Step 3: Create SQL directory and dump path
             sql_dir = Path(context.storage_config.path)
@@ -154,8 +168,21 @@ class FullBackupStrategy(BackupStrategy):
             
             logger.info(f"Database dumped successfully ({dump_size} bytes)")
             
-            # Step 8: Compress if configured
-            if context.backup_config.compression:
+            # Step 8: Handle file movement based on type
+            if dbms == "files":
+                # Files backup is already compressed (tar.gz), move to path_files
+                # Assuming path_files is available in context or hardcoded pattern
+                sql_dir = dump_file.parent
+                files_dir = Path(str(sql_dir).replace('bkpsql', 'bkp_files'))
+                files_dir.mkdir(parents=True, exist_ok=True)
+                
+                final_file = files_dir / dump_file.name
+                dump_file.rename(final_file)
+                
+                context.set_storage_location(str(final_file))
+                logger.info(f"Files backup moved to: {final_file}")
+            elif context.backup_config.compression:
+                # Database backup: compress if configured
                 compressed_file = self._compress_backup(dump_file, context)
                 if compressed_file:
                     compressed_size = compressed_file.stat().st_size
@@ -166,6 +193,7 @@ class FullBackupStrategy(BackupStrategy):
                     logger.warning("Compression failed, keeping SQL file only")
                     context.set_storage_location(str(dump_file))
             else:
+                # No compression requested
                 context.set_storage_location(str(dump_file))
             
             # Step 9: Update context
