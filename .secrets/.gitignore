@@ -1,0 +1,9 @@
+# Ignore EVERYTHING in .secrets/
+*
+
+# But track .gitignore itself
+!.gitignore
+
+# Track example files (no real credentials)
+!*.example.json
+!README.md

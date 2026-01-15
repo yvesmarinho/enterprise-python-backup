@@ -60,9 +60,12 @@ dmypy.json
 credentials.json
 !credentials.example.json
 
-# Config files with sensitive data
+# Config files with sensitive data (2026-01-15: Security Audit)
 config/config.yaml
 !config/config.example.yaml
+vya_backupbd.json
+python_backup.json
+!*.example.json
 
 # Logs
 *.log
