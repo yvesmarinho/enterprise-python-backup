@@ -1,0 +1,11 @@
+# Gitleaks Ignore File
+# https://github.com/gitleaks/gitleaks#gitleaksignore
+
+# False positives - Documentation examples (base64 of "hash_da_senha_aqui")
+README.md:generic-api-key:992
+README.md:generic-api-key:999
+src/vya_backupdb.egg-info/PKG-INFO:generic-api-key:962
+src/vya_backupdb.egg-info/PKG-INFO:generic-api-key:969
+
+# Temporary Docker test files
+tmp/.env:generic-api-key:2
