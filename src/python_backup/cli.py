@@ -713,6 +713,285 @@ def test_connection(
         raise typer.Exit(code=1)
 
 
+# ============================================================
+# Vault Management Commands
+# ============================================================
+
+@app.command("vault-add")
+def vault_add(
+    credential_id: str = typer.Option(..., "--id", help="Credential identifier (e.g., mysql-prod)"),
+    username: str = typer.Option(..., "--username", "-u", help="Username"),
+    password: str = typer.Option(..., "--password", "-p", help="Password"),
+    description: str = typer.Option("", "--description", "-d", help="Optional description"),
+    vault_path: str = typer.Option(".secrets/vault.json.enc", "--vault", help="Path to vault file"),
+):
+    """
+    Add or update credential in vault.
+    
+    Examples:
+        vya-backupdb vault-add --id mysql-prod --username root --password MyP@ss123
+        vya-backupdb vault-add --id smtp-server --username user@domain.com --password xxx --description "SMTP Server"
+    """
+    from python_backup.security.vault import VaultManager
+    
+    console.print("[bold blue]VYA BackupDB - Vault Add Credential[/bold blue]\n")
+    
+    try:
+        vault = VaultManager(vault_path)
+        
+        # Load existing vault (or create new if doesn't exist)
+        vault.load()
+        
+        # Check if credential already exists
+        exists = vault.exists(credential_id)
+        action = "Updating" if exists else "Adding"
+        
+        console.print(f"{action} credential '[cyan]{credential_id}[/cyan]'...")
+        
+        # Set credential
+        success = vault.set(credential_id, username, password, description)
+        
+        if not success:
+            console.print(f"[red]✗ Failed to set credential[/red]")
+            raise typer.Exit(code=1)
+        
+        # Save vault
+        if not vault.save():
+            console.print(f"[red]✗ Failed to save vault[/red]")
+            raise typer.Exit(code=1)
+        
+        action_past = "Updated" if exists else "Added"
+        console.print(f"[green]✓ {action_past}:[/green] Credential '{credential_id}'")
+        console.print(f"  Username: {username}")
+        if description:
+            console.print(f"  Description: {description}")
+        console.print(f"  Vault: {vault_path}")
+        
+    except Exception as e:
+        console.print(f"[red]✗ Error:[/red] {e}")
+        raise typer.Exit(code=1)
+
+
+@app.command("vault-get")
+def vault_get(
+    credential_id: str = typer.Option(..., "--id", help="Credential identifier"),
+    show_password: bool = typer.Option(False, "--show-password", help="Display password"),
+    vault_path: str = typer.Option(".secrets/vault.json.enc", "--vault", help="Path to vault file"),
+):
+    """
+    Retrieve credential from vault.
+    
+    Examples:
+        vya-backupdb vault-get --id mysql-prod
+        vya-backupdb vault-get --id mysql-prod --show-password
+    """
+    from python_backup.security.vault import VaultManager
+    
+    console.print("[bold blue]VYA BackupDB - Vault Get Credential[/bold blue]\n")
+    
+    try:
+        vault = VaultManager(vault_path)
+        
+        if not vault.load():
+            console.print(f"[red]✗ Failed to load vault[/red]")
+            raise typer.Exit(code=1)
+        
+        # Get credential
+        credential = vault.get(credential_id)
+        
+        if not credential:
+            console.print(f"[red]✗ Credential '{credential_id}' not found[/red]")
+            raise typer.Exit(code=1)
+        
+        # Get metadata
+        metadata = vault.get_metadata(credential_id)
+        
+        console.print(f"[green]✓ Found:[/green] Credential '{credential_id}'")
+        console.print(f"  Username: [cyan]{credential['username']}[/cyan]")
+        
+        if show_password:
+            console.print(f"  Password: [red]{credential['password']}[/red]")
+        else:
+            console.print(f"  Password: [dim]{'*' * 12}[/dim] (use --show-password to reveal)")
+        
+        if metadata:
+            if metadata.get('description'):
+                console.print(f"  Description: {metadata['description']}")
+            if metadata.get('created_at'):
+                console.print(f"  Created: {metadata['created_at']}")
+            if metadata.get('updated_at'):
+                console.print(f"  Updated: {metadata['updated_at']}")
+        
+    except Exception as e:
+        console.print(f"[red]✗ Error:[/red] {e}")
+        raise typer.Exit(code=1)
+
+
+@app.command("vault-list")
+def vault_list(
+    vault_path: str = typer.Option(".secrets/vault.json.enc", "--vault", help="Path to vault file"),
+):
+    """
+    List all credentials in vault.
+    
+    Examples:
+        vya-backupdb vault-list
+    """
+    from python_backup.security.vault import VaultManager
+    
+    console.print("[bold blue]VYA BackupDB - Vault List Credentials[/bold blue]\n")
+    
+    try:
+        vault = VaultManager(vault_path)
+        
+        if not vault.load():
+            console.print(f"[yellow]Vault is empty or doesn't exist[/yellow]")
+            console.print(f"Path: {vault_path}")
+            raise typer.Exit(code=0)
+        
+        # Get all credentials
+        credential_ids = vault.list_credentials()
+        
+        if not credential_ids:
+            console.print("[yellow]No credentials in vault[/yellow]")
+            raise typer.Exit(code=0)
+        
+        # Display as table
+        table = Table(title=f"Vault Credentials ({len(credential_ids)})")
+        table.add_column("ID", style="cyan")
+        table.add_column("Username", style="green")
+        table.add_column("Description")
+        table.add_column("Updated", style="dim")
+        
+        for cred_id in credential_ids:
+            credential = vault.get(cred_id)
+            metadata = vault.get_metadata(cred_id)
+            
+            username = credential['username'] if credential else "???"
+            description = metadata.get('description', '') if metadata else ''
+            updated = metadata.get('updated_at', '')[:19] if metadata else ''  # Trim to datetime
+            
+            table.add_row(cred_id, username, description, updated)
+        
+        console.print(table)
+        console.print(f"\n[dim]Vault: {vault_path}[/dim]")
+        
+        # Show vault info
+        info = vault.get_vault_info()
+        console.print(f"[dim]Size: {info['file_size_bytes'] / 1024:.1f} KB | Version: {info['version']}[/dim]")
+        
+    except Exception as e:
+        console.print(f"[red]✗ Error:[/red] {e}")
+        raise typer.Exit(code=1)
+
+
+@app.command("vault-remove")
+def vault_remove(
+    credential_id: str = typer.Option(..., "--id", help="Credential identifier"),
+    force: bool = typer.Option(False, "--force", help="Skip confirmation"),
+    vault_path: str = typer.Option(".secrets/vault.json.enc", "--vault", help="Path to vault file"),
+):
+    """
+    Remove credential from vault.
+    
+    Examples:
+        vya-backupdb vault-remove --id mysql-old
+        vya-backupdb vault-remove --id mysql-old --force
+    """
+    from python_backup.security.vault import VaultManager
+    
+    console.print("[bold blue]VYA BackupDB - Vault Remove Credential[/bold blue]\n")
+    
+    try:
+        vault = VaultManager(vault_path)
+        
+        if not vault.load():
+            console.print(f"[red]✗ Failed to load vault[/red]")
+            raise typer.Exit(code=1)
+        
+        # Check if exists
+        if not vault.exists(credential_id):
+            console.print(f"[red]✗ Credential '{credential_id}' not found[/red]")
+            raise typer.Exit(code=1)
+        
+        # Confirm removal unless --force
+        if not force:
+            console.print(f"[yellow]⚠ Warning:[/yellow] Remove credential '[cyan]{credential_id}[/cyan]'?")
+            confirm = typer.confirm("Are you sure?")
+            if not confirm:
+                console.print("[yellow]Cancelled by user[/yellow]")
+                raise typer.Exit(code=0)
+        
+        # Remove credential
+        if not vault.remove(credential_id):
+            console.print(f"[red]✗ Failed to remove credential[/red]")
+            raise typer.Exit(code=1)
+        
+        # Save vault
+        if not vault.save():
+            console.print(f"[red]✗ Failed to save vault[/red]")
+            raise typer.Exit(code=1)
+        
+        console.print(f"[green]✓ Removed:[/green] Credential '{credential_id}'")
+        
+    except Exception as e:
+        console.print(f"[red]✗ Error:[/red] {e}")
+        raise typer.Exit(code=1)
+
+
+@app.command("vault-info")
+def vault_info(
+    vault_path: str = typer.Option(".secrets/vault.json.enc", "--vault", help="Path to vault file"),
+):
+    """
+    Show vault information and statistics.
+    
+    Examples:
+        vya-backupdb vault-info
+    """
+    from python_backup.security.vault import VaultManager
+    
+    console.print("[bold blue]VYA BackupDB - Vault Information[/bold blue]\n")
+    
+    try:
+        vault = VaultManager(vault_path)
+        
+        # Check if vault exists
+        vault_file = Path(vault_path)
+        if not vault_file.exists():
+            console.print(f"[yellow]Vault doesn't exist yet[/yellow]")
+            console.print(f"Path: {vault_path}")
+            console.print("\nUse 'vault-add' to create your first credential")
+            raise typer.Exit(code=0)
+        
+        if not vault.load():
+            console.print(f"[red]✗ Failed to load vault[/red]")
+            raise typer.Exit(code=1)
+        
+        info = vault.get_vault_info()
+        
+        # Display info
+        console.print(f"[bold]Vault:[/bold] {info['path']}")
+        console.print(f"[bold]Version:[/bold] {info['version']}")
+        console.print(f"[bold]Credentials:[/bold] {info['credentials_count']}")
+        console.print(f"[bold]File Size:[/bold] {info['file_size_bytes'] / 1024:.2f} KB")
+        console.print(f"[bold]Cached:[/bold] {info['cache_size']} credential(s)")
+        
+        # File permissions
+        stat = vault_file.stat()
+        mode = oct(stat.st_mode)[-3:]
+        console.print(f"[bold]Permissions:[/bold] {mode}")
+        
+        if mode != "600":
+            console.print(f"  [yellow]⚠ Warning: Permissions should be 600 (owner read/write only)[/yellow]")
+        
+        console.print("\n[green]✓ Vault is healthy[/green]")
+        
+    except Exception as e:
+        console.print(f"[red]✗ Error:[/red] {e}")
+        raise typer.Exit(code=1)
+
+
 def main():
     """Main CLI entry point."""
     app()

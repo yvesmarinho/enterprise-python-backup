@@ -145,4 +145,28 @@ class EncryptionManager:
             dict: Dictionary with decrypted values
         """
         return decrypt_dict(encrypted_data)
+    
+    def encrypt_bytes(self, plaintext: bytes) -> bytes:
+        """
+        Encrypt bytes using Fernet.
+        
+        Args:
+            plaintext: Bytes to encrypt
+            
+        Returns:
+            bytes: Encrypted bytes
+        """
+        return self._fernet.encrypt(plaintext)
+    
+    def decrypt_bytes(self, encrypted: bytes) -> bytes:
+        """
+        Decrypt bytes using Fernet.
+        
+        Args:
+            encrypted: Encrypted bytes
+            
+        Returns:
+            bytes: Decrypted bytes
+        """
+        return self._fernet.decrypt(encrypted)
 
