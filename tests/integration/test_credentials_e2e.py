@@ -10,9 +10,9 @@ import json
 import os
 from pathlib import Path
 
-from vya_backupbd.security.credentials import CredentialsManager
-from vya_backupbd.security.encryption import EncryptionManager
-from vya_backupbd.config.models import DatabaseConfig
+from python_backup.security.credentials import CredentialsManager
+from python_backup.security.encryption import EncryptionManager
+from python_backup.config.models import DatabaseConfig
 
 
 @pytest.fixture

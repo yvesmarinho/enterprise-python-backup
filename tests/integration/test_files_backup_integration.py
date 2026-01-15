@@ -14,11 +14,11 @@ import subprocess
 from pathlib import Path
 from datetime import datetime
 
-from vya_backupbd.db.files import FilesAdapter
-from vya_backupbd.config.models import DatabaseConfig
-from vya_backupbd.backup.context import BackupContext, DatabaseConfig as BackupDbConfig
-from vya_backupbd.backup.strategy import BackupStrategy, StorageConfig, BackupConfig
-from vya_backupbd.backup.executor import BackupExecutor
+from python_backup.db.files import FilesAdapter
+from python_backup.config.models import DatabaseConfig
+from python_backup.backup.context import BackupContext, DatabaseConfig as BackupDbConfig
+from python_backup.backup.strategy import BackupStrategy, StorageConfig, BackupConfig
+from python_backup.backup.executor import BackupExecutor
 
 
 @pytest.fixture

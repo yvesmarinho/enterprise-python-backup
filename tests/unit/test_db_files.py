@@ -16,8 +16,8 @@ from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
 from datetime import datetime
 
-from vya_backupbd.db.files import FilesAdapter
-from vya_backupbd.config.models import DatabaseConfig
+from python_backup.db.files import FilesAdapter
+from python_backup.config.models import DatabaseConfig
 
 
 @pytest.fixture

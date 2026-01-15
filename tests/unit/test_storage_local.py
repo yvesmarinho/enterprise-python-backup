@@ -10,7 +10,7 @@ import os
 from pathlib import Path
 from datetime import datetime
 
-from vya_backupbd.storage.local import LocalStorage
+from python_backup.storage.local import LocalStorage
 
 
 @pytest.fixture

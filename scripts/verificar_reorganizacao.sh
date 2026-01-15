@@ -45,49 +45,49 @@ buscar_referencias() {
 }
 
 # =============================================================================
-# PROJETO 1: vya_backupbd
+# PROJETO 1: python_backup
 # =============================================================================
 echo "═══════════════════════════════════════════════════════════════"
-echo "📁 [1/2] Verificando vya_backupbd..."
+echo "📁 [1/2] Verificando python_backup..."
 echo "═══════════════════════════════════════════════════════════════"
 
-BASE_VYA="/home/yves_marinho/Documentos/DevOps/Vya-Jobs/vya_backupbd"
+BASE_VYA="/home/yves_marinho/Documentos/DevOps/Vya-Jobs/python_backup"
 
-buscar_referencias "convert_readme.py" "vya_backupbd" "$BASE_VYA"
-buscar_referencias "check_versions.sh" "vya_backupbd" "$BASE_VYA"
-buscar_referencias "demo_improvements.py" "vya_backupbd" "$BASE_VYA"
-buscar_referencias "test_config_improvements.py" "vya_backupbd" "$BASE_VYA"
-buscar_referencias "README.html" "vya_backupbd" "$BASE_VYA"
-buscar_referencias "requirements-old.txt" "vya_backupbd" "$BASE_VYA"
+buscar_referencias "convert_readme.py" "python_backup" "$BASE_VYA"
+buscar_referencias "check_versions.sh" "python_backup" "$BASE_VYA"
+buscar_referencias "demo_improvements.py" "python_backup" "$BASE_VYA"
+buscar_referencias "test_config_improvements.py" "python_backup" "$BASE_VYA"
+buscar_referencias "README.html" "python_backup" "$BASE_VYA"
+buscar_referencias "requirements-old.txt" "python_backup" "$BASE_VYA"
 
 # =============================================================================
-# PROJETO 2: enterprise-vya_backupbd
+# PROJETO 2: enterprise-python_backup
 # =============================================================================
 echo "═══════════════════════════════════════════════════════════════"
-echo "📁 [2/2] Verificando enterprise-vya_backupbd..."
+echo "📁 [2/2] Verificando enterprise-python_backup..."
 echo "═══════════════════════════════════════════════════════════════"
 
-BASE_ENTERPRISE="/home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-vya_backupbd"
+BASE_ENTERPRISE="/home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-python_backup"
 
-buscar_referencias "main.py" "enterprise-vya_backupbd" "$BASE_ENTERPRISE"
-buscar_referencias "install_sys.sh" "enterprise-vya_backupbd" "$BASE_ENTERPRISE"
-buscar_referencias "create_mysql_backup_user.sql" "enterprise-vya_backupbd" "$BASE_ENTERPRISE"
-buscar_referencias "CORRECAO_BACKUP_POSTGRESQL.md" "enterprise-vya_backupbd" "$BASE_ENTERPRISE"
+buscar_referencias "main.py" "enterprise-python_backup" "$BASE_ENTERPRISE"
+buscar_referencias "install_sys.sh" "enterprise-python_backup" "$BASE_ENTERPRISE"
+buscar_referencias "create_mysql_backup_user.sql" "enterprise-python_backup" "$BASE_ENTERPRISE"
+buscar_referencias "CORRECAO_BACKUP_POSTGRESQL.md" "enterprise-python_backup" "$BASE_ENTERPRISE"
 
 # =============================================================================
 # Verificar estrutura criada
 # =============================================================================
 echo "═══════════════════════════════════════════════════════════════"
-echo "📂 Verificando estrutura criada em enterprise-vya-backupdb..."
+echo "📂 Verificando estrutura criada em enterprise-python-backup..."
 echo "═══════════════════════════════════════════════════════════════"
 
-BASE_MAIN="/home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-vya-backupdb"
+BASE_MAIN="/home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-python-backup"
 
 pastas_esperadas=(
-    "src/vya_backupbd/core"
-    "src/vya_backupbd/modules"
-    "src/vya_backupbd/utils"
-    "src/vya_backupbd/config"
+    "src/python_backup/core"
+    "src/python_backup/modules"
+    "src/python_backup/utils"
+    "src/python_backup/config"
     "docs/architecture"
     "docs/api"
     "docs/guides"
@@ -122,11 +122,11 @@ echo "🐍 Verificando arquivos __init__.py..."
 echo "═══════════════════════════════════════════════════════════════"
 
 init_files=(
-    "src/vya_backupbd/__init__.py"
-    "src/vya_backupbd/core/__init__.py"
-    "src/vya_backupbd/modules/__init__.py"
-    "src/vya_backupbd/utils/__init__.py"
-    "src/vya_backupbd/config/__init__.py"
+    "src/python_backup/__init__.py"
+    "src/python_backup/core/__init__.py"
+    "src/python_backup/modules/__init__.py"
+    "src/python_backup/utils/__init__.py"
+    "src/python_backup/config/__init__.py"
 )
 
 for init_file in "${init_files[@]}"; do
@@ -154,7 +154,7 @@ echo "   2. Atualizar os paths nos scripts shell"
 echo "   3. Atualizar as referências nos Makefiles"
 echo ""
 echo "🧪 Próximos passos recomendados:"
-echo "   1. Executar testes existentes: cd vya_backupbd && pytest tests/"
-echo "   2. Testar Makefile: cd vya_backupbd && make help"
+echo "   1. Executar testes existentes: cd python_backup && pytest tests/"
+echo "   2. Testar Makefile: cd python_backup && make help"
 echo "   3. Verificar imports: python -m py_compile src/**/*.py"
 echo ""

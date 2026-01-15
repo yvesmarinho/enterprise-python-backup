@@ -39,7 +39,7 @@
 - ✅ T13-T15: Documentação (README, guia, exemplos)
 
 **Arquivos Criados**:
-- `src/vya_backupbd/db/files.py` (306 linhas)
+- `src/python_backup/db/files.py` (306 linhas)
 - `tests/unit/test_db_files.py` (350 linhas)
 - `tests/integration/test_files_backup_integration.py` (350 linhas)
 - `docs/guides/FILES_BACKUP_GUIDE.md` (450 linhas)
@@ -54,7 +54,7 @@
 
 **Teste Real**:
 ```bash
-python -m vya_backupbd.cli backup --instance 3
+python -m python_backup.cli backup --instance 3
 # Resultado: 13 arquivos (1.5GB) com sucesso
 ```
 
@@ -196,7 +196,7 @@ python scripts/utils/test_email_failure.py
 ### Backup de Arquivos
 ```bash
 # Teste do sistema de backup de arquivos
-python -m vya_backupbd.cli backup --instance 3
+python -m python_backup.cli backup --instance 3
 
 # Resultado:
 # ✅ 13 arquivos backupados
@@ -243,18 +243,18 @@ mv test_email_failure.py scripts/utils/test_email_failure.py
 ## Arquivos Modificados Hoje
 
 ### Código de Produção (11 arquivos)
-1. `src/vya_backupbd/cli.py` - Rastreamento de tempo, tupla de retorno
-2. `src/vya_backupbd/backup/strategy.py` - Roteamento de arquivos, sanitização
-3. `src/vya_backupbd/config/loader.py` - Parse de path_files
-4. `src/vya_backupbd/config/models.py` - Literal "files", port ge=0
-5. `src/vya_backupbd/utils/email_sender.py` - Anexos, corpo detalhado
-6. `src/vya_backupbd/utils/logging_config.py` - Retorna caminho do log
-7. `vya_backupbd.json` - Instância 3, path_files
+1. `src/python_backup/cli.py` - Rastreamento de tempo, tupla de retorno
+2. `src/python_backup/backup/strategy.py` - Roteamento de arquivos, sanitização
+3. `src/python_backup/config/loader.py` - Parse de path_files
+4. `src/python_backup/config/models.py` - Literal "files", port ge=0
+5. `src/python_backup/utils/email_sender.py` - Anexos, corpo detalhado
+6. `src/python_backup/utils/logging_config.py` - Retorna caminho do log
+7. `python_backup.json` - Instância 3, path_files
 8. `README.md` - Versão 2.0.0, seção File Backup
 
 ### Código Novo (7 arquivos)
-1. `src/vya_backupbd/db/files.py` (306 linhas)
-2. `src/vya_backupbd/utils/retention_manager.py` (280 linhas)
+1. `src/python_backup/db/files.py` (306 linhas)
+2. `src/python_backup/utils/retention_manager.py` (280 linhas)
 3. `tests/unit/test_db_files.py` (350 linhas)
 4. `tests/integration/test_files_backup_integration.py` (350 linhas)
 5. `docs/guides/FILES_BACKUP_GUIDE.md` (450 linhas)
@@ -297,7 +297,7 @@ mv test_email_failure.py scripts/utils/test_email_failure.py
 
 ### Prioridade Alta (3-4 horas)
 1. **Executar Suite Completa de Testes**
-   - `pytest tests/ -v --cov=src/vya_backupbd`
+   - `pytest tests/ -v --cov=src/python_backup`
    - Gerar relatório de cobertura
    - Corrigir falhas (se houver)
 

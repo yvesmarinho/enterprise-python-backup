@@ -19,7 +19,7 @@
 - **669 linhas** de código Typer + Rich
 - **7 comandos** implementados e testados
 - Output profissional com cores e tabelas
-- Integração completa com vya_backupbd.json
+- Integração completa com python_backup.json
 
 ### 2. Sistema de Restore MySQL ✅
 - **Implementado e TESTADO** com sucesso
@@ -147,19 +147,19 @@ Status: PRODUCTION READY
 ## 🔧 Arquivos Modificados
 
 ### Novos (8 arquivos)
-1. `src/vya_backupbd/__main__.py` (11 linhas)
-2. `src/vya_backupbd/cli.py` (669 linhas)
-3. `src/vya_backupbd/utils/email_sender.py` (355 linhas)
-4. `src/vya_backupbd/utils/logging_config.py` (88 linhas)
-5. `src/vya_backupbd/utils/log_sanitizer.py` (284 linhas)
-6. `src/vya_backupbd/utils/backup_manager.py` (70 linhas - INCOMPLETE)
+1. `src/python_backup/__main__.py` (11 linhas)
+2. `src/python_backup/cli.py` (669 linhas)
+3. `src/python_backup/utils/email_sender.py` (355 linhas)
+4. `src/python_backup/utils/logging_config.py` (88 linhas)
+5. `src/python_backup/utils/log_sanitizer.py` (284 linhas)
+6. `src/python_backup/utils/backup_manager.py` (70 linhas - INCOMPLETE)
 7. `tests/unit/utils/test_log_sanitizer.py` (231 linhas)
 8. Documentação (4 novos docs)
 
 ### Modificados (3 arquivos)
-1. `src/vya_backupbd/db/mysql.py` (+75 linhas)
-2. `src/vya_backupbd/db/postgresql.py` (+120 linhas)
-3. `vya_backupbd.json` (email_settings adicionado)
+1. `src/python_backup/db/mysql.py` (+75 linhas)
+2. `src/python_backup/db/postgresql.py` (+120 linhas)
+3. `python_backup.json` (email_settings adicionado)
 
 ---
 
@@ -182,7 +182,7 @@ Status: PRODUCTION READY
 ### 🔴 HIGH (Next Session - 30 min)
 1. **Testar PostgreSQL Restore**
    ```bash
-   python -m vya_backupbd.cli restore \
+   python -m python_backup.cli restore \
      --file /tmp/bkpzip/20260113_170055_postgresql_chatwoot_db.zip \
      --instance 2 --target chatwoot_db_test --force
    ```
@@ -293,14 +293,14 @@ Status: PRODUCTION READY
 
 ### Quick Start Commands
 ```bash
-cd /home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-vya-backupdb
+cd /home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-python-backup
 source .venv/bin/activate
 git status
-python -m vya_backupbd.cli --help
+python -m python_backup.cli --help
 ```
 
 ### Configuration
-- **File**: vya_backupbd.json
+- **File**: python_backup.json
 - **Logs**: /var/log/enterprise/vya_backupdb_*.log
 - **Backups**: /tmp/bkpzip/
 

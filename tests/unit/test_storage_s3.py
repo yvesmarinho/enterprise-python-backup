@@ -9,7 +9,7 @@ from unittest.mock import Mock, patch, MagicMock
 from datetime import datetime
 from pathlib import Path
 
-from vya_backupbd.storage.s3 import S3Storage
+from python_backup.storage.s3 import S3Storage
 
 
 @pytest.fixture

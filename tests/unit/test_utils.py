@@ -10,8 +10,8 @@ import bz2
 from pathlib import Path
 from datetime import datetime, timedelta
 
-from vya_backupbd.utils.compression import compress_file, decompress_file, get_compression_ratio
-from vya_backupbd.utils.retention import (
+from python_backup.utils.compression import compress_file, decompress_file, get_compression_ratio
+from python_backup.utils.retention import (
     RetentionPolicy,
     should_keep_backup,
     apply_retention_policy,

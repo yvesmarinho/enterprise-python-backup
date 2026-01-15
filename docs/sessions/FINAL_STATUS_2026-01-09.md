@@ -72,11 +72,11 @@
 ✅ .gitignore                              (95 lines)
 ✅ config/config.example.yaml              (47 lines)
 ✅ .secrets/credentials.example.json       (19 lines)
-✅ src/vya_backupbd/__init__.py           (31 lines)
-✅ src/vya_backupbd/config/__init__.py    (17 lines)
-✅ src/vya_backupbd/config/models.py      (101 lines)
-✅ src/vya_backupbd/security/__init__.py  (12 lines)
-✅ src/vya_backupbd/security/encryption.py (87 lines)
+✅ src/python_backup/__init__.py           (31 lines)
+✅ src/python_backup/config/__init__.py    (17 lines)
+✅ src/python_backup/config/models.py      (101 lines)
+✅ src/python_backup/security/__init__.py  (12 lines)
+✅ src/python_backup/security/encryption.py (87 lines)
 ```
 
 ### Test Code (3 files)
@@ -285,11 +285,11 @@ Co-authored-by: GitHub Copilot <copilot@github.com>
 pyproject.toml
 config/config.example.yaml
 .secrets/credentials.example.json
-src/vya_backupbd/__init__.py
-src/vya_backupbd/config/__init__.py
-src/vya_backupbd/config/models.py
-src/vya_backupbd/security/__init__.py
-src/vya_backupbd/security/encryption.py
+src/python_backup/__init__.py
+src/python_backup/config/__init__.py
+src/python_backup/config/models.py
+src/python_backup/security/__init__.py
+src/python_backup/security/encryption.py
 tests/conftest.py
 tests/unit/test_config.py
 tests/unit/test_encryption.py
@@ -463,7 +463,7 @@ specs/001-phase2-core-development/tasks.md
 **Email**: yves@vya.digital  
 **Project**: VYA BackupDB v2.0.0  
 **License**: GNU GPL v2.0+  
-**Repository**: `enterprise-vya-backupdb`  
+**Repository**: `enterprise-python-backup`  
 **Branch**: `001-phase2-core-development`
 
 ---

@@ -102,7 +102,7 @@
 
 ### Código Fonte
 ```
-src/vya_backupbd/
+src/python_backup/
 ├── __init__.py
 ├── config/
 │   ├── __init__.py
@@ -180,12 +180,12 @@ Criado script `git-commit-from-file.sh` com recursos:
 
 ```bash
 # Ativar ambiente
-cd /home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-vya-backupdb
+cd /home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-python-backup
 source .venv/bin/activate
 git checkout 001-phase2-core-development
 
 # Verificar testes
-pytest tests/unit/ -v --cov=src/vya_backupbd
+pytest tests/unit/ -v --cov=src/python_backup
 
 # Ver progresso
 cat docs/TODO.md | head -50
@@ -280,7 +280,7 @@ Esta foi uma sessão **extremamente produtiva**:
 **Email**: yves@vya.digital  
 **Projeto**: VYA BackupDB v2.0.0  
 **Licença**: GNU GPL v2.0+  
-**GitHub**: github.com/yvesmarinho/enterprise-vya-backupdb
+**GitHub**: github.com/yvesmarinho/enterprise-python-backup
 
 ---
 

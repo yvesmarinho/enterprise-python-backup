@@ -37,7 +37,7 @@ Session focused on **Phase 10 (User Backup/Restore)** initiation and test data g
 - ✅ T094: Implemented PostgreSQL pg_dumpall backup
 
 **In Progress**:
-- 🔄 T104: Refactor codebase to use vya_backupbd.json (HIGH priority)
+- 🔄 T104: Refactor codebase to use python_backup.json (HIGH priority)
 
 **Pending**:
 - ❌ T095-T097: Restore functionality
@@ -50,10 +50,10 @@ Session focused on **Phase 10 (User Backup/Restore)** initiation and test data g
 ## Deliverables
 
 ### Code
-1. ✅ `src/vya_backupbd/users/__init__.py` (9 lines)
-2. ✅ `src/vya_backupbd/users/manager.py` (254 lines)
-3. ✅ `src/vya_backupbd/users/mysql.py` (148 lines)
-4. ✅ `src/vya_backupbd/config/loader.py` (155 lines)
+1. ✅ `src/python_backup/users/__init__.py` (9 lines)
+2. ✅ `src/python_backup/users/manager.py` (254 lines)
+3. ✅ `src/python_backup/users/mysql.py` (148 lines)
+4. ✅ `src/python_backup/config/loader.py` (155 lines)
 5. ✅ `tests/unit/test_users_manager.py` (344 lines)
 6. ✅ `tests/integration/test_users_backup_integration.py` (285 lines)
 7. ✅ `tests/generate_test_data.py` (758 lines)
@@ -116,7 +116,7 @@ Session focused on **Phase 10 (User Backup/Restore)** initiation and test data g
 ## Technical Achievements
 
 ### 1. UsersManager Implementation
-**File**: [src/vya_backupbd/users/manager.py](../src/vya_backupbd/users/manager.py)
+**File**: [src/python_backup/users/manager.py](../src/python_backup/users/manager.py)
 
 **Features**:
 - MySQL backup via SHOW GRANTS
@@ -150,10 +150,10 @@ UsersManager (class) → backup_users(), restore_users(), list_users()
 - Zero integrity violations
 
 ### 3. Configuration Loader
-**File**: [src/vya_backupbd/config/loader.py](../src/vya_backupbd/config/loader.py)
+**File**: [src/python_backup/config/loader.py](../src/python_backup/config/loader.py)
 
 **Features**:
-- Parse vya_backupbd.json
+- Parse python_backup.json
 - Dataclass-based structure
 - Auto-detect config file location
 - Helper methods (get_enabled_databases, etc.)
@@ -193,7 +193,7 @@ UsersManager (class) → backup_users(), restore_users(), list_users()
 *None*
 
 ### High Priority (P1)
-1. **T104: Config Migration** - Refactor all modules to use vya_backupbd.json
+1. **T104: Config Migration** - Refactor all modules to use python_backup.json
    - Estimated: 2-3 hours
    - Blocks: Production deployment
    - Files affected: BackupExecutor, RestoreExecutor, ScheduleManager, CLI
@@ -275,7 +275,7 @@ UsersManager (class) → backup_users(), restore_users(), list_users()
 - **Why**: Blocks production deployment
 - **Estimated**: 2-3 hours
 - **Deliverables**:
-  - All modules using vya_backupbd.json
+  - All modules using python_backup.json
   - All 512 tests passing
   - Migration guide
 
@@ -298,7 +298,7 @@ UsersManager (class) → backup_users(), restore_users(), list_users()
 ## Environment State
 
 ### Workspace
-- **Path**: `/home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-vya-backupdb`
+- **Path**: `/home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-python-backup`
 - **Branch**: `001-phase2-core-development`
 - **Clean**: ✅ Yes (all files committed)
 - **Git Status**: Up to date
@@ -314,7 +314,7 @@ pytest==7.x.x
 ```
 
 ### Configuration
-- ✅ `vya_backupbd.json` - Present in project root
+- ✅ `python_backup.json` - Present in project root
 - ✅ `config/config.example.yaml` - Template available
 - ⚠️ Two config formats coexist (migration pending)
 
@@ -406,7 +406,7 @@ pytest==7.x.x
 
 ```bash
 # 1. Navigate and verify
-cd /home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-vya-backupdb
+cd /home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-python-backup
 git status  # Should be clean
 
 # 2. Check environment
@@ -416,8 +416,8 @@ uv run pytest tests/unit/test_users_manager.py -v  # 28 tests pass
 cat docs/TODO.md | grep -A 20 "Phase 10"
 
 # 4. Start work
-# Option A: code src/vya_backupbd/backup/executor.py  # T104
-# Option B: code src/vya_backupbd/users/manager.py   # Restore
+# Option A: code src/python_backup/backup/executor.py  # T104
+# Option B: code src/python_backup/users/manager.py   # Restore
 ```
 
 ---

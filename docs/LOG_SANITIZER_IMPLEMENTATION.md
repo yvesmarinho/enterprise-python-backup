@@ -12,7 +12,7 @@ Sistema de sanitização de logs para mascarar automaticamente credenciais e dad
 
 ### Arquivos Criados
 
-#### 1. `/src/vya_backupbd/utils/log_sanitizer.py`
+#### 1. `/src/python_backup/utils/log_sanitizer.py`
 Classe principal de sanitização com as seguintes funcionalidades:
 
 **Classe: `LogSanitizer`**
@@ -119,7 +119,7 @@ Suite completa de testes com 16 casos de teste:
 
 ### Uso Básico
 ```python
-from vya_backupbd.utils.log_sanitizer import safe_repr
+from python_backup.utils.log_sanitizer import safe_repr
 
 config = DatabaseConfig(
     host="localhost",
@@ -133,7 +133,7 @@ logger.debug(f"Config: {safe_repr(config)}")
 
 ### Sanitizar Dicionário
 ```python
-from vya_backupbd.utils.log_sanitizer import sanitize
+from python_backup.utils.log_sanitizer import sanitize
 
 data = {
     "user": "admin",
@@ -147,7 +147,7 @@ safe_data = sanitize(data)
 
 ### Sanitizar String
 ```python
-from vya_backupbd.utils.log_sanitizer import sanitize_string
+from python_backup.utils.log_sanitizer import sanitize_string
 
 text = "Connecting with password=secret123 and token=abc"
 safe_text = sanitize_string(text)
@@ -175,7 +175,7 @@ result = sanitizer.sanitize_dict({
 
 ### Comando de Teste
 ```bash
-python -m vya_backupbd backup --instance 1 --database test_db
+python -m python_backup backup --instance 1 --database test_db
 ```
 
 ### Verificar Logs
@@ -221,7 +221,7 @@ tail -f /var/log/enterprise/vya_backupdb_$(date +%Y%m%d).log | grep -E "password
 logger.debug(f"Config: {config}")
 
 # ✅ CORRETO - Sanitiza
-from vya_backupbd.utils.log_sanitizer import safe_repr
+from python_backup.utils.log_sanitizer import safe_repr
 logger.debug(f"Config: {safe_repr(config)}")
 ```
 
@@ -252,5 +252,5 @@ logger.debug(f"Config: {safe_repr(config)}")
 
 **Implementado por**: GitHub Copilot  
 **Testado em**: 13/01/2026  
-**Ambiente**: enterprise-vya-backupdb  
+**Ambiente**: enterprise-python-backup  
 **Branch**: 001-phase2-core-development

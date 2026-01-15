@@ -1,0 +1,4 @@
+*/10 * * * * systemctl start idrivecron
+30 0 * * * sh /usr/local/bin/enterprise/vya_backupbd/vya_backupbd.sh
+0 5 * * * /usr/bin/rm -f /tmp/bkpsql/*
+0 5 * * * /usr/bin/rm -f /tmp/bkpzip/*

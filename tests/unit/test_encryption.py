@@ -5,7 +5,7 @@ import socket
 import pytest
 from cryptography.fernet import InvalidToken
 
-from vya_backupbd.security.encryption import (
+from python_backup.security.encryption import (
     decrypt_dict,
     decrypt_string,
     encrypt_dict,

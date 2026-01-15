@@ -33,7 +33,7 @@
 
 **Completed Files**:
 ```
-enterprise-vya-backupdb/
+enterprise-python-backup/
 ├── .venv/                          # Virtual environment (uv)
 ├── .gitignore                      # Comprehensive ignore patterns
 ├── pyproject.toml                  # Project configuration
@@ -42,7 +42,7 @@ enterprise-vya-backupdb/
 │   └── templates/
 ├── .secrets/
 │   └── credentials.example.json    # Credential structure
-├── src/vya_backupbd/
+├── src/python_backup/
 │   ├── __init__.py                 # Package exports
 │   ├── config/
 │   │   ├── __init__.py             # Config module exports
@@ -66,11 +66,11 @@ enterprise-vya-backupdb/
 ---------- coverage: platform linux, python 3.12.3-final-0 -----------
 Name                                      Stmts   Miss    Cover
 ----------------------------------------------------------------
-src/vya_backupbd/__init__.py                  6      0  100.00%
-src/vya_backupbd/config/__init__.py           2      0  100.00%
-src/vya_backupbd/config/models.py            50      0  100.00%
-src/vya_backupbd/security/__init__.py         2      0  100.00%
-src/vya_backupbd/security/encryption.py      23      0  100.00%
+src/python_backup/__init__.py                  6      0  100.00%
+src/python_backup/config/__init__.py           2      0  100.00%
+src/python_backup/config/models.py            50      0  100.00%
+src/python_backup/security/__init__.py         2      0  100.00%
+src/python_backup/security/encryption.py      23      0  100.00%
 ----------------------------------------------------------------
 TOTAL                                        83      0  100.00%
 ```
@@ -87,7 +87,7 @@ TOTAL                                        83      0  100.00%
 ### 1. Activate Environment
 
 ```bash
-cd /home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-vya-backupdb
+cd /home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-python-backup
 source .venv/bin/activate
 git checkout 001-phase2-core-development
 ```
@@ -96,7 +96,7 @@ git checkout 001-phase2-core-development
 
 ```bash
 # Run tests to confirm everything works
-pytest tests/unit/ -v --cov=src/vya_backupbd --cov-report=term-missing
+pytest tests/unit/ -v --cov=src/python_backup --cov-report=term-missing
 
 # Expected: 28 passed, 100% coverage
 ```
@@ -120,11 +120,11 @@ cat specs/001-phase2-core-development/tasks.md | grep -A 30 "Phase 3"
    - `tests/integration/test_postgresql_connection.py` - testcontainers PostgreSQL
 
 2. **T022-T028**: Implement database layer
-   - `src/vya_backupbd/db/__init__.py`
-   - `src/vya_backupbd/db/engine.py` (SQLAlchemy Core engine factory)
-   - `src/vya_backupbd/db/base.py` (abstract DatabaseAdapter)
-   - `src/vya_backupbd/db/mysql.py` (MySQLAdapter implementation)
-   - `src/vya_backupbd/db/postgresql.py` (PostgreSQLAdapter implementation)
+   - `src/python_backup/db/__init__.py`
+   - `src/python_backup/db/engine.py` (SQLAlchemy Core engine factory)
+   - `src/python_backup/db/base.py` (abstract DatabaseAdapter)
+   - `src/python_backup/db/mysql.py` (MySQLAdapter implementation)
+   - `src/python_backup/db/postgresql.py` (PostgreSQLAdapter implementation)
    - Add connection pooling, error handling, logging
 
 ### 4. Reference Documentation
@@ -175,7 +175,7 @@ source .venv/bin/activate
 pytest tests/ -v
 
 # Run with coverage
-pytest tests/unit/ --cov=src/vya_backupbd --cov-report=html
+pytest tests/unit/ --cov=src/python_backup --cov-report=html
 
 # Check code quality
 black src/ tests/
@@ -245,7 +245,7 @@ pytest tests/unit/ -v
 **Developer**: Yves Marinho (yves@vya.digital)  
 **Project**: VYA BackupDB v2.0.0  
 **License**: GNU GPL v2.0+  
-**Repository**: `enterprise-vya-backupdb`
+**Repository**: `enterprise-python-backup`
 
 ---
 

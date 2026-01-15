@@ -48,7 +48,7 @@ dev = [
 ]
 
 [project.scripts]
-vya-backupdb = "vya_backupbd.__main__:main"
+vya-backupdb = "python_backup.__main__:main"
 
 [project.urls]
 Homepage = "https://github.com/vya-digital/vya-backupdb"
@@ -79,7 +79,7 @@ markers = [
 asyncio_mode = "auto"
 
 [tool.coverage.run]
-source = ["src/vya_backupbd"]
+source = ["src/python_backup"]
 omit = [
     "*/tests/*",
     "*/__pycache__/*",

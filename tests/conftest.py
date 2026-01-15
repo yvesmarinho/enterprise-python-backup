@@ -68,7 +68,7 @@ def sample_config_dict() -> dict:
 @pytest.fixture
 def sample_mysql_config():
     """Sample MySQL database configuration."""
-    from vya_backupbd.config.models import DatabaseConfig
+    from python_backup.config.models import DatabaseConfig
     
     return DatabaseConfig(
         id="test-mysql-01",
@@ -86,7 +86,7 @@ def sample_mysql_config():
 @pytest.fixture
 def sample_postgresql_config():
     """Sample PostgreSQL database configuration."""
-    from vya_backupbd.config.models import DatabaseConfig
+    from python_backup.config.models import DatabaseConfig
     
     return DatabaseConfig(
         id="test-pg-01",

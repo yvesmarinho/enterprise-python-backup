@@ -2,7 +2,7 @@
 
 ## Parâmetro: retention_files
 
-O parâmetro `retention_files` no arquivo `vya_backupbd.json` define a quantidade de arquivos de backup (por banco de dados) que serão mantidos antes de serem removidos automaticamente.
+O parâmetro `retention_files` no arquivo `python_backup.json` define a quantidade de arquivos de backup (por banco de dados) que serão mantidos antes de serem removidos automaticamente.
 
 ### Localização no JSON
 

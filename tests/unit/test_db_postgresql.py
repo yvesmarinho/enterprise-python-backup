@@ -9,8 +9,8 @@ import pytest
 from unittest.mock import Mock, MagicMock, patch
 import subprocess
 
-from vya_backupbd.config.models import DatabaseConfig
-from vya_backupbd.db.postgresql import PostgreSQLAdapter
+from python_backup.config.models import DatabaseConfig
+from python_backup.db.postgresql import PostgreSQLAdapter
 
 
 class TestPostgreSQLAdapterInitialization:

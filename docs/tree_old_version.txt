@@ -1,0 +1,31 @@
+root@wf004:~# tree -L 3 /usr/local/bin/ 
+/usr/local/bin/
+├── dbilogstrip
+├── dbiprof
+├── dbiproxy
+├── enterprise
+│   ├── vya_backupbd
+│   │   ├── __main__.py
+│   │   ├── modules
+│   │   ├── requirements.txt
+│   │   ├── VERSION
+│   │   ├── vya_backupbd.json
+│   │   ├── vya_backupbd.py
+│   │   └── vya_backupbd.sh
+│   └── vya_global
+│       ├── global_functions.py
+│       ├── LICENSE
+│       ├── __pycache__
+│       ├── README.md
+│       ├── requirements.txt
+│       └── vya_global-requirements.txt
+├── pg_create_user_db.py
+└── py_venv
+    ├── vya_backupbd
+    │   ├── bin
+    │   ├── lib
+    │   └── pyvenv.cfg
+    └── vya_global
+        ├── bin
+        ├── lib
+        └── pyvenv.cfg

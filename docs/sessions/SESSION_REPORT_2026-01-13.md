@@ -29,7 +29,7 @@ Sessão focada em **implementação completa do sistema de Restore para MySQL e 
 
 ✅ **CLI Interface**
 - 7 comandos implementados (backup, restore, restore-list, config-validate, config-show, test-connection, version)
-- Integração com vya_backupbd.json
+- Integração com python_backup.json
 - Rich output com tabelas e cores
 
 ---
@@ -38,7 +38,7 @@ Sessão focada em **implementação completa do sistema de Restore para MySQL e 
 
 ### 1. Sistema de Restore MySQL (COMPLETO)
 
-**Arquivo**: `src/vya_backupbd/db/mysql.py`
+**Arquivo**: `src/python_backup/db/mysql.py`
 
 **Funcionalidade**:
 ```python
@@ -63,11 +63,11 @@ def restore_database(self, database: str, backup_file: str) -> bool:
 **Teste Realizado**:
 ```bash
 # Backup
-python -m vya_backupbd.cli backup --instance 1 --database dns_db --compression
+python -m python_backup.cli backup --instance 1 --database dns_db --compression
 # Resultado: /tmp/bkpzip/20260113_155440_mysql_dns_db.zip (3.1 KB)
 
 # Restore
-python -m vya_backupbd.cli restore \
+python -m python_backup.cli restore \
   --file /tmp/bkpzip/20260113_155440_mysql_dns_db.zip \
   --instance 1 \
   --target dns_db_restored \
@@ -95,7 +95,7 @@ mysql -h 154.53.36.3 -u root -pVya2020 dns_db_restored -e "SELECT COUNT(*) FROM 
 
 ### 2. Sistema de Restore PostgreSQL (EM PROGRESSO)
 
-**Arquivo**: `src/vya_backupbd/db/postgresql.py`
+**Arquivo**: `src/python_backup/db/postgresql.py`
 
 **Funcionalidade**:
 ```python
@@ -125,14 +125,14 @@ def restore_database(self, database: str, backup_file: str) -> bool:
 **Teste Realizado**:
 ```bash
 # Backup
-python -m vya_backupbd.cli backup --instance 2 --database chatwoot_db --compression
+python -m python_backup.cli backup --instance 2 --database chatwoot_db --compression
 # Resultado: 
 #   SQL: 123,766,261 bytes (118 MB)
 #   ZIP: 27,691,235 bytes (26 MB)
 #   Compressão: 4.47x
 
 # Restore (primeira tentativa - erro)
-python -m vya_backupbd.cli restore \
+python -m python_backup.cli restore \
   --file /tmp/bkpzip/20260113_170055_postgresql_chatwoot_db.zip \
   --instance 2 \
   --target chatwoot_db_restored \
@@ -157,7 +157,7 @@ python -m vya_backupbd.cli restore \
 
 ### 3. CLI Interface (COMPLETO)
 
-**Arquivo**: `src/vya_backupbd/cli.py` (669 linhas)
+**Arquivo**: `src/python_backup/cli.py` (669 linhas)
 
 **Comandos Implementados**:
 
@@ -216,13 +216,13 @@ python -m vya_backupbd.cli restore \
 - ✅ Confirmação de segurança (exceto com --force)
 - ✅ Dry-run mode para todos os comandos
 - ✅ Logging completo em /var/log/enterprise/
-- ✅ Integração com vya_backupbd.json
+- ✅ Integração com python_backup.json
 
 ---
 
 ### 4. Sistema de Email Notifications (COMPLETO)
 
-**Arquivo**: `src/vya_backupbd/utils/email_sender.py` (355 linhas)
+**Arquivo**: `src/python_backup/utils/email_sender.py` (355 linhas)
 
 **Classes**:
 ```python
@@ -249,7 +249,7 @@ class EmailSender:
 - **Success**: Header verde, lista de bancos, estatísticas (tamanho total, count)
 - **Failure**: Header vermelho, lista de erros com detalhes por banco
 
-**Configuração** (vya_backupbd.json):
+**Configuração** (python_backup.json):
 ```json
 "email_settings": {
   "enabled": true,
@@ -297,16 +297,16 @@ class EmailSender:
 
 | File | Lines | Status | Description |
 |------|-------|--------|-------------|
-| `src/vya_backupbd/__main__.py` | 11 | ✅ NEW | CLI entry point |
-| `src/vya_backupbd/cli.py` | 669 | ✅ NEW | Complete CLI with 7 commands |
-| `src/vya_backupbd/db/mysql.py` | 315 | ✅ MODIFIED | Added restore_database() |
-| `src/vya_backupbd/db/postgresql.py` | 346 | ✅ MODIFIED | Added restore_database() with filters |
-| `src/vya_backupbd/utils/email_sender.py` | 355 | ✅ NEW | Email notification system |
-| `src/vya_backupbd/utils/logging_config.py` | 88 | ✅ NEW | Logging configuration |
-| `src/vya_backupbd/utils/log_sanitizer.py` | 284 | ✅ NEW | Sensitive data masking |
-| `src/vya_backupbd/utils/backup_manager.py` | 70 | ⚠️ PARTIAL | Backup file listing (incomplete) |
+| `src/python_backup/__main__.py` | 11 | ✅ NEW | CLI entry point |
+| `src/python_backup/cli.py` | 669 | ✅ NEW | Complete CLI with 7 commands |
+| `src/python_backup/db/mysql.py` | 315 | ✅ MODIFIED | Added restore_database() |
+| `src/python_backup/db/postgresql.py` | 346 | ✅ MODIFIED | Added restore_database() with filters |
+| `src/python_backup/utils/email_sender.py` | 355 | ✅ NEW | Email notification system |
+| `src/python_backup/utils/logging_config.py` | 88 | ✅ NEW | Logging configuration |
+| `src/python_backup/utils/log_sanitizer.py` | 284 | ✅ NEW | Sensitive data masking |
+| `src/python_backup/utils/backup_manager.py` | 70 | ⚠️ PARTIAL | Backup file listing (incomplete) |
 | `tests/unit/utils/test_log_sanitizer.py` | 231 | ✅ NEW | 19 tests for log sanitizer |
-| `vya_backupbd.json` | 66 | ✅ MODIFIED | Added email_settings |
+| `python_backup.json` | 66 | ✅ MODIFIED | Added email_settings |
 
 **Total New Code**: ~2,400 lines
 
@@ -369,7 +369,7 @@ Next Test: Pending (corrections applied, ready to retry)
 
 ## Configuration Changes
 
-### vya_backupbd.json
+### python_backup.json
 
 **Added** email_settings section:
 ```json
@@ -640,27 +640,27 @@ Test Coverage:
 
 **Environment**:
 ```bash
-cd /home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-vya-backupdb
+cd /home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-python-backup
 source .venv/bin/activate
 git checkout 001-phase2-core-development
 ```
 
 **Critical Files**:
-- `src/vya_backupbd/cli.py` - CLI interface (COMPLETE)
-- `src/vya_backupbd/db/mysql.py` - MySQL restore (WORKING)
-- `src/vya_backupbd/db/postgresql.py` - PostgreSQL restore (NEEDS TESTING)
+- `src/python_backup/cli.py` - CLI interface (COMPLETE)
+- `src/python_backup/db/mysql.py` - MySQL restore (WORKING)
+- `src/python_backup/db/postgresql.py` - PostgreSQL restore (NEEDS TESTING)
 
 **Testing Commands**:
 ```bash
 # Test MySQL restore (working)
-python -m vya_backupbd.cli restore \
+python -m python_backup.cli restore \
   --file /tmp/bkpzip/20260113_155440_mysql_dns_db.zip \
   --instance 1 \
   --target test_restore_mysql \
   --force
 
 # Test PostgreSQL restore (needs retry)
-python -m vya_backupbd.cli restore \
+python -m python_backup.cli restore \
   --file /tmp/bkpzip/20260113_170055_postgresql_chatwoot_db.zip \
   --instance 2 \
   --target test_restore_postgresql \

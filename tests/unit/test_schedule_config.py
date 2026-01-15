@@ -6,7 +6,7 @@ Tests schedule configuration and cron expression handling.
 
 import pytest
 from datetime import datetime, timedelta
-from vya_backupbd.schedule.config import ScheduleConfig, CronExpression
+from python_backup.schedule.config import ScheduleConfig, CronExpression
 
 
 class TestCronExpression:

@@ -6,8 +6,8 @@
 
 ### **FASE 1: Configuração e Modelos** ✅ COMPLETA
 
-**T1: Atualizar vya_backupbd.json** ✅
-- Arquivo: vya_backupbd.json
+**T1: Atualizar python_backup.json** ✅
+- Arquivo: python_backup.json
 - Ações:
   - [x] Adicionar entrada no `bkp_system`:
     ```json
@@ -49,7 +49,7 @@
 ### **FASE 2: Adapter de Arquivos** ✅ COMPLETA
 
 **T4: Criar FilesAdapter** ✅
-- Arquivo: `src/vya_backupbd/db/files.py` (CRIADO - 306 linhas)
+- Arquivo: `src/python_backup/db/files.py` (CRIADO - 306 linhas)
 - Ações:
   - [x] Criar classe `FilesAdapter(DatabaseAdapter)`
   - [x] Implementar `__init__(config: DatabaseConfig)`
@@ -74,13 +74,13 @@
 **T5: Atualizar engine.py - Factory** ✅
 - Arquivo: engine.py
 - Ações:
-  - [x] Adicionar import: `from vya_backupbd.db.files import FilesAdapter`
+  - [x] Adicionar import: `from python_backup.db.files import FilesAdapter`
   - [x] Adicionar case `"files"` no factory via get_database_adapter()
 
 **T6: Atualizar __init__.py do módulo db** ✅
 - Arquivo: __init__.py
 - Ações:
-  - [x] Adicionar export: `from vya_backupbd.db.files import FilesAdapter`
+  - [x] Adicionar export: `from python_backup.db.files import FilesAdapter`
 
 ---
 
@@ -189,16 +189,16 @@
 ### **RESUMO DA IMPLEMENTAÇÃO** ✅
 
 **Arquivos criados (7/7):** ✅
-1. ✅ `src/vya_backupbd/db/files.py` (306 linhas)
+1. ✅ `src/python_backup/db/files.py` (306 linhas)
 2. ✅ `tests/unit/test_db_files.py` (350+ linhas, 50+ testes)
 3. ✅ `tests/integration/test_files_backup_integration.py` (350+ linhas)
 4. ✅ `examples/configurations/files_backup_example.json`
 5. ✅ `docs/guides/FILES_BACKUP_GUIDE.md` (450+ linhas)
-6. ✅ `src/vya_backupbd/utils/retention_manager.py` (BONUS - 280+ linhas)
+6. ✅ `src/python_backup/utils/retention_manager.py` (BONUS - 280+ linhas)
 7. ✅ `test_email_failure.py` (BONUS - teste de email)
 
 **Arquivos modificados (8/8):** ✅
-1. ✅ vya_backupbd.json (adicionado instance 3, path_files)
+1. ✅ python_backup.json (adicionado instance 3, path_files)
 2. ✅ models.py (Literal["files"], port>=0, db_list)
 3. ✅ loader.py (path_files, validação files)
 4. ✅ engine.py (FilesAdapter factory)

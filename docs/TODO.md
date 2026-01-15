@@ -1,41 +1,28 @@
 # TODO - VYA BackupDB v2.0.0
 
-**Last Updated**: 2026-01-14 (17:00 - Session Complete)  
+**Last Updated**: 2026-01-15 (09:20 - Session Started)  
 **Current Branch**: `001-phase2-core-development`  
 **Phase 2 Progress**: 80.2% Complete (97/121 tasks)  
-**Tests**: 531+ passing (100+ new today)
+**Tests**: 531+ passing
 
 ---
 
-## 🎯 Completed Today (2026-01-14) ✅
+## 🎯 Today's Session (2026-01-15) - In Progress ⏳
 
-### Finished Tasks
-- ✅ **T-FILE-BACKUP**: Complete file backup system (15 tasks)
-  - FilesAdapter with glob pattern support (306 lines)
-  - Unit tests (50+) and integration tests (30+)
-  - Comprehensive documentation (450+ lines guide)
-  - Configuration examples and CLI integration
-  - Real-world tested: 1.5GB backup successful
-  
-- ✅ **T-EMAIL-ENHANCE**: Email system enhancements
-  - Log file attachments with MIME encoding
-  - Detailed failure information (execution time, statistics)
-  - HTML templates with warning boxes
-  - Tested and validated: email delivered successfully
-  
-- ✅ **T-RETENTION**: RetentionManager implementation
-  - Complete 280-line implementation
-  - Dry-run support, statistics tracking
-  - Age-based cleanup with space calculation
-  - CLI integration pending (next session)
+### Session Recovery ✅
+- ✅ Read all previous session documentation
+- ✅ Loaded INDEX, TODO, TODAY_ACTIVITIES files
+- ✅ Read copilot rules (.copilot-strict-rules.md, .copilot-strict-enforcement.md, .copilot-rules.md)
+- ✅ Generated TODAY_ACTIVITIES_2026-01-15.md
+- ✅ Generated SESSION_RECOVERY_2026-01-15.md
+- ✅ Updated INDEX.md with new session
+- ✅ Updated TODO.md (this file)
 
-- ✅ **T-DOCS**: Extensive documentation
-  - FILES_BACKUP_GUIDE.md (450 lines)
-  - SESSION_RECOVERY_2026-01-14.md (200 lines)
-  - SESSION_REPORT_2026-01-14.md (350 lines)
-  - FINAL_STATUS_2026-01-14.md (500 lines)
-  - TODAY_ACTIVITIES_2026-01-14.md (350 lines)
-  - README.md updated with file backup section
+### Immediate Tasks ⏳
+- ⏳ Organize TODAY_ACTIVITIES files (move older files to sessions/)
+- ⏳ Execute complete test suite
+- ⏳ Implement CLI retention commands
+- ⏳ End-to-end system testing
 
 ---
 
@@ -43,18 +30,22 @@
 
 ### High Priority 🔴
 - 🔴 **T-TEST-SUITE**: Execute complete test suite
-  - Run: `pytest tests/ -v --cov=src/vya_backupbd`
+  - Run: `pytest tests/ -v --cov=src/python_backup`
   - Generate coverage report
   - Fix any failing tests
   - Validate 531+ tests pass
   - Time estimate: 30 minutes
   
-- 🔴 **T-RETENTION-CLI**: Implement CLI retention commands
-  - Command: `vya retention cleanup --instance X [--dry-run]`
-  - Command: `vya retention status --instance X`
-  - Add unit tests for new commands
-  - Integration with existing RetentionManager
-  - Time estimate: 1-2 hours
+- ❌ **T-RETENTION-CLI**: ~~Implement CLI retention commands~~ (CANCELADO)
+  - **Status**: Não será implementado
+  - **Motivo**: Sistema de produção não usa retenção local
+  - **Processo atual**:
+    - 22:00 → vya_backupdb gera backups em /tmp/bkpsql e /tmp/bkpzip
+    - 03:00 → Idrive faz upload de /tmp/bkpzip para cloud
+    - 05:00 → Cron remove todos os arquivos locais
+  - **Resultado**: Sem arquivos locais para retenção
+  - **Retenção**: Gerenciada pelo Idrive na cloud
+  - **RetentionManager**: Mantido para casos de uso futuros
   
 - 🔴 **T-E2E-TESTS**: End-to-end system testing
   - Test PostgreSQL full backup/restore cycle
@@ -105,12 +96,12 @@
 - [X] T008: Create .secrets/ directory structure
 
 ### Phase 2: Foundation (7/7) - 100% ✅
-- [X] T009: Create src/vya_backupbd/__init__.py
+- [X] T009: Create src/python_backup/__init__.py
 - [X] T010: Create tests/__init__.py
 - [X] T011: Create tests/conftest.py with fixtures
-- [X] T012: Create src/vya_backupbd/config/models.py (Pydantic v2)
+- [X] T012: Create src/python_backup/config/models.py (Pydantic v2)
 - [X] T013: Create tests/unit/test_config.py (13 tests)
-- [X] T014: Create src/vya_backupbd/security/encryption.py (Fernet)
+- [X] T014: Create src/python_backup/security/encryption.py (Fernet)
 - [X] T015: Create tests/unit/test_encryption.py (15 tests)
 
 **Notes**:
@@ -126,11 +117,11 @@
 - [X] T019: tests/unit/test_db_postgresql.py - PostgreSQL adapter tests (32 tests)
 - [X] T020: tests/integration/test_mysql_connection.py - Real MySQL tests (10 tests)
 - [X] T021: tests/integration/test_postgresql_connection.py - Real PostgreSQL tests (15 tests)
-- [X] T022: src/vya_backupbd/db/__init__.py - Module setup
-- [X] T023: src/vya_backupbd/db/engine.py - SQLAlchemy engine factory
-- [X] T024: src/vya_backupbd/db/base.py - Abstract DatabaseAdapter
-- [X] T025: src/vya_backupbd/db/mysql.py - MySQLAdapter implementation
-- [X] T026: src/vya_backupbd/db/postgresql.py - PostgreSQLAdapter implementation
+- [X] T022: src/python_backup/db/__init__.py - Module setup
+- [X] T023: src/python_backup/db/engine.py - SQLAlchemy engine factory
+- [X] T024: src/python_backup/db/base.py - Abstract DatabaseAdapter
+- [X] T025: src/python_backup/db/mysql.py - MySQLAdapter implementation
+- [X] T026: src/python_backup/db/postgresql.py - PostgreSQLAdapter implementation
 - [X] T027: Connection pooling and error handling - Complete
 - [X] T028: Logging for database operations - Complete
 
@@ -145,8 +136,8 @@
 ### Phase 4: US2 Credentials Management (8/8) - 100% ✅
 - [X] T029: tests/unit/test_credentials.py - Credential manager tests (27 tests)
 - [X] T030: tests/integration/test_credentials_e2e.py - E2E credential tests (16 tests)
-- [X] T031: src/vya_backupbd/security/__init__.py - Module exports updated
-- [X] T032: src/vya_backupbd/security/credentials.py - CredentialsManager class
+- [X] T031: src/python_backup/security/__init__.py - Module exports updated
+- [X] T032: src/python_backup/security/credentials.py - CredentialsManager class
 - [X] T033: Enhance encryption.py - EncryptionManager class added
 - [X] T034: Credential validation - validate() method implemented
 - [X] T035: Log sanitization - sanitize_log_message() function
@@ -165,12 +156,12 @@
 - [X] T037: tests/unit/test_storage_local.py - Local storage tests (29 tests)
 - [X] T038: tests/unit/test_storage_s3.py - S3 storage tests (26 tests)
 - [X] T039: tests/unit/test_utils.py - Utility function tests (26 tests)
-- [X] T040: src/vya_backupbd/storage/__init__.py - Module setup
-- [X] T041: src/vya_backupbd/storage/local.py - LocalStorage class
-- [X] T042: src/vya_backupbd/storage/s3.py - S3Storage class
-- [X] T043: src/vya_backupbd/utils/__init__.py - Module setup
-- [X] T044: src/vya_backupbd/utils/compression.py - Compression utilities
-- [X] T045: src/vya_backupbd/utils/retention.py - Retention policy
+- [X] T040: src/python_backup/storage/__init__.py - Module setup
+- [X] T041: src/python_backup/storage/local.py - LocalStorage class
+- [X] T042: src/python_backup/storage/s3.py - S3Storage class
+- [X] T043: src/python_backup/utils/__init__.py - Module setup
+- [X] T044: src/python_backup/utils/compression.py - Compression utilities
+- [X] T045: src/python_backup/utils/retention.py - Retention policy
 
 **Notes**:
 - All tests passing (273/273) ✅ Unit + Integration
@@ -185,10 +176,10 @@
 - [X] T047: tests/unit/test_backup_strategy.py - Strategy pattern tests (20 tests)
 - [X] T048: tests/unit/test_backup_executor.py - Executor tests (21 tests)
 - [X] T049: tests/integration/test_backup_e2e.py - E2E tests (9 tests, needs refinement)
-- [X] T050: src/vya_backupbd/backup/__init__.py - Module exports
-- [X] T051: src/vya_backupbd/backup/context.py - BackupContext (state, metadata, serialization)
-- [X] T052: src/vya_backupbd/backup/strategy.py - FullBackupStrategy + Factory
-- [X] T053: src/vya_backupbd/backup/executor.py - BackupExecutor (validation, retry, cleanup)
+- [X] T050: src/python_backup/backup/__init__.py - Module exports
+- [X] T051: src/python_backup/backup/context.py - BackupContext (state, metadata, serialization)
+- [X] T052: src/python_backup/backup/strategy.py - FullBackupStrategy + Factory
+- [X] T053: src/python_backup/backup/executor.py - BackupExecutor (validation, retry, cleanup)
 - [X] T054: Integration with database adapters (PostgreSQL, MySQL)
 - [X] T055: Integration with storage (LocalStorage, S3Storage)
 - [X] T056: Integration with credentials (encrypted credentials support)
@@ -207,10 +198,10 @@
 - [X] T059: tests/unit/test_restore_strategy.py - Strategy pattern tests (20 tests)
 - [X] T060: tests/unit/test_restore_executor.py - Executor tests (21 tests)
 - [X] T061: tests/integration/test_restore_e2e.py - E2E tests (not created, will be done later)
-- [X] T062: src/vya_backupbd/restore/__init__.py - Module exports
-- [X] T063: src/vya_backupbd/restore/context.py - RestoreContext (state, compression detection)
-- [X] T064: src/vya_backupbd/restore/strategy.py - FullRestoreStrategy + Factory
-- [X] T065: src/vya_backupbd/restore/executor.py - RestoreExecutor (validation, retry, cleanup)
+- [X] T062: src/python_backup/restore/__init__.py - Module exports
+- [X] T063: src/python_backup/restore/context.py - RestoreContext (state, compression detection)
+- [X] T064: src/python_backup/restore/strategy.py - FullRestoreStrategy + Factory
+- [X] T065: src/python_backup/restore/executor.py - RestoreExecutor (validation, retry, cleanup)
 - [X] T066: Integration with database adapters (restore_database method)
 - [X] T067: Integration with storage (download) and compression (decompress)
 
@@ -227,10 +218,10 @@
 - [X] T068: tests/unit/test_schedule_config.py - ScheduleConfig tests (30 tests)
 - [X] T069: tests/unit/test_schedule_manager.py - ScheduleManager tests (35 tests)
 - [X] T070: tests/unit/test_job_executor.py - JobExecutor tests (10 tests)
-- [X] T071: src/vya_backupbd/schedule/__init__.py - Module exports
-- [X] T072: src/vya_backupbd/schedule/config.py - ScheduleConfig + CronExpression
-- [X] T073: src/vya_backupbd/schedule/manager.py - ScheduleManager + persistence
-- [X] T074: src/vya_backupbd/schedule/executor.py - JobExecutor + integration
+- [X] T071: src/python_backup/schedule/__init__.py - Module exports
+- [X] T072: src/python_backup/schedule/config.py - ScheduleConfig + CronExpression
+- [X] T073: src/python_backup/schedule/manager.py - ScheduleManager + persistence
+- [X] T074: src/python_backup/schedule/executor.py - JobExecutor + integration
 - [X] T075: Cron expression parsing and validation (croniter)
 - [X] T076: Schedule presets (hourly, daily, weekly, monthly)
 - [X] T077: Execution tracking and history
@@ -250,21 +241,21 @@
 
 ### Phase 10: US8 - User Backup/Restore (5/19) - 26% 🔄
 - [X] T090: tests/unit/test_users_manager.py - UsersManager tests (28 tests)
-- [X] T091: src/vya_backupbd/users/__init__.py - Module exports
-- [X] T092: src/vya_backupbd/users/manager.py - UsersManager base implementation
-- [X] T093: src/vya_backupbd/users/manager.py - MySQL SHOW GRANTS implementation
-- [X] T094: src/vya_backupbd/users/manager.py - PostgreSQL pg_dumpall implementation
+- [X] T091: src/python_backup/users/__init__.py - Module exports
+- [X] T092: src/python_backup/users/manager.py - UsersManager base implementation
+- [X] T093: src/python_backup/users/manager.py - MySQL SHOW GRANTS implementation
+- [X] T094: src/python_backup/users/manager.py - PostgreSQL pg_dumpall implementation
 - [ ] T095: tests/integration/test_users_backup_integration.py - Real database tests
-- [ ] T096: src/vya_backupbd/users/manager.py - MySQL user restore
-- [ ] T097: src/vya_backupbd/users/manager.py - PostgreSQL role restore
-- [ ] T098: src/vya_backupbd/config/loader.py - Load vya_backupbd.json configuration
+- [ ] T096: src/python_backup/users/manager.py - MySQL user restore
+- [ ] T097: src/python_backup/users/manager.py - PostgreSQL role restore
+- [ ] T098: src/python_backup/config/loader.py - Load python_backup.json configuration
 - [ ] T099: Integrate UsersManager with BackupExecutor
 - [ ] T100: Integrate UsersManager with RestoreExecutor
 - [ ] T101: CLI command for user backup (vya-backup users backup)
 - [ ] T102: CLI command for user restore (vya-backup users restore)
 - [ ] T103: CLI command for user list (vya-backup users list)
-- [ ] T104: Update all modules to use vya_backupbd.json
-- [ ] T105: Create migration guide from config.yaml to vya_backupbd.json
+- [ ] T104: Update all modules to use python_backup.json
+- [ ] T105: Create migration guide from config.yaml to python_backup.json
 - [ ] T106: Add user backup to scheduling system
 - [ ] T107: Add user backup metrics to monitoring
 - [ ] T108: Documentation for user backup/restore
@@ -274,14 +265,14 @@
 - MySQL SHOW GRANTS backup implemented
 - PostgreSQL pg_dumpall backup implemented
 - Generated 11,519 MySQL test records + 6,750 PostgreSQL test records
-- Created config loader for vya_backupbd.json
+- Created config loader for python_backup.json
 - **PENDING**: Complete integration tests and restore functionality
-- **PENDING**: Refactor all code to use vya_backupbd.json instead of config.yaml
+- **PENDING**: Refactor all code to use python_backup.json instead of config.yaml
 
 ## 🔄 In Progress (1 task)
 
 **Current Sprint** (2026-01-12):
-- 🔄 **T104**: Refactor codebase to use vya_backupbd.json configuration
+- 🔄 **T104**: Refactor codebase to use python_backup.json configuration
   - Priority: HIGH
   - Status: Config loader created, integration pending
   - Blockers: None
@@ -300,10 +291,10 @@
 - [X] T079: tests/unit/test_metrics.py - Metrics collection tests (16 tests)
 - [X] T080: tests/unit/test_alerts.py - Alert rules tests (20 tests)
 - [X] T081: tests/unit/test_notifications.py - Notification system tests (25 tests)
-- [X] T082: src/vya_backupbd/monitoring/__init__.py - Module setup
-- [X] T083: src/vya_backupbd/monitoring/metrics.py - MetricsCollector with Prometheus format
-- [X] T084: src/vya_backupbd/monitoring/alerts.py - AlertManager with threshold rules
-- [X] T085: src/vya_backupbd/monitoring/notifications.py - NotificationManager with multi-channel
+- [X] T082: src/python_backup/monitoring/__init__.py - Module setup
+- [X] T083: src/python_backup/monitoring/metrics.py - MetricsCollector with Prometheus format
+- [X] T084: src/python_backup/monitoring/alerts.py - AlertManager with threshold rules
+- [X] T085: src/python_backup/monitoring/notifications.py - NotificationManager with multi-channel
 - [X] T086: Integration with BackupExecutor - metrics, alerts, notifications
 - [X] T087: Integration with RestoreExecutor - metrics, alerts, notifications
 - [X] T088: Multi-recipient notification support (SUCCESS vs FAILURE/ALERT)
@@ -503,6 +494,114 @@ Tests Passing: 484/484
    - S3Storage for cloud backup
    - Compression utilities (gzip, bzip2)
    - Retention policy implementation
+
+---
+
+## 🎯 Future Versions Planning
+
+### v2.0.0 - Final Improvements (Pending) 🔵
+**Priority Order**:
+
+1. **🔒 T-SECURITY-001**: Implementar proteção dos dados de conexão
+   - Migrar senhas de `python_backup.json` para vault seguro
+   - Usar CredentialsManager existente para criptografia
+   - Adicionar CLI: `credentials add/update/remove/list`
+   - Manter retrocompatibilidade com JSON por 1 versão
+   - Documentar processo de migração
+   - **Precedência**: ALTA - Segurança crítica
+   - **Estimativa**: 6-8 horas
+   - **Dependências**: Nenhuma
+
+2. **� T-SECURITY-002**: Auditoria e relocação de arquivos sensíveis
+   - Analisar todos os arquivos do projeto (grep -r "password\|secret\|key")
+   - Identificar pastas com informações sensíveis (logs, configs, backups)
+   - Criar/padronizar pasta `./secrets/` para dados sensíveis
+   - Adicionar `./secrets/` ao `.gitignore` (se ainda não existe)
+   - Mover arquivos sensíveis para `./secrets/`
+   - Atualizar código para usar novo caminho
+   - Validar que nenhum dado sensível está versionado
+   - Atualizar documentação com nova estrutura
+   - **Motivação**: Alerta Github Dependabot sobre exposição de dados
+   - **Precedência**: CRÍTICA - Segurança e compliance
+   - **Estimativa**: 4-6 horas
+   - **Dependências**: Nenhuma (pode executar em paralelo com T-SECURITY-001)
+
+3. **�📊 T-SORT-001**: Ordenar databases por nome dentro de cada DBMS
+   - Implementar sorting em `load_vya_config()` após parse
+   - Ordenar `db_list` alfabeticamente para PostgreSQL
+   - Ordenar `db_list` alfabeticamente para MySQL
+   - Atualizar testes existentes para validar ordem
+   - **Precedência**: MÉDIA - Melhoria de UX
+   - **Estimativa**: 2-3 horas
+   - **Dependências**: Nenhuma
+
+3. **� T-AUDIT-001**: Implementar relatório de auditoria
+   - Criar módulo `audit_report.py` para tracking de operações
+   - Registrar: timestamp, operação (backup/restore), databases, status, duração
+   - Gerar relatório JSON: `/var/log/enterprise/vya_backupdb_audit.json`
+   - Adicionar CLI: `audit-report --start-date --end-date --format json|html|csv`
+   - Incluir métricas: total backups, sucessos, falhas, tempo médio, tamanho total
+   - Integrar com email (relatório semanal automático opcional)
+   - **Precedência**: ALTA - Compliance e rastreabilidade
+   - **Estimativa**: 6-8 horas
+   - **Dependências**: Nenhuma
+
+4. **�🚀 T-DEPLOY-001**: Criar script Python de deploy automático
+   - Detectar versão antiga instalada (se existir)
+   - Backup de configuração existente
+   - Migração de configuração (JSON antigo → novo formato)
+   - Instalação de dependências (virtualenv)
+   - Atualização de crontab automaticamente
+   - Validação pós-deploy (connection-test)
+   - Usar apenas pacotes default (pathlib, json, subprocess)
+   - **Precedência**: ALTA - Facilita adoção
+   - **Estimativa**: 8-10 horas
+   - **Dependências**: T-SECURITY-001 (para migração de credenciais)
+
+5. **🏷️ T-RENAME-001**: Renomear projeto para "enterprise-python-backupdb"
+   - Atualizar pyproject.toml (name, package)
+   - Renomear pasta src/python_backup → src/python_backupdb
+   - Atualizar todos os imports no código
+   - Atualizar documentação (README, docs/)
+   - Atualizar CLI commands
+   - Manter namespace python_backup deprecated por 1 versão
+   - **Precedência**: BAIXA - Apenas branding
+   - **Estimativa**: 4-6 horas
+   - **Dependências**: T-DEPLOY-001 (deploy script precisa do nome final)
+
+**Status v2.0.0**: 6 tarefas adicionadas  
+**Tempo Total Estimado**: 30-41 horas
+
+---
+
+### v2.0.1 - UX Improvements 🟢
+
+1. **📊 T-PROGRESS-001**: CLI com termômetro de execução
+   - Adicionar progress bar usando Rich Progress
+   - Mostrar apenas quando executado manualmente (TTY)
+   - Suprimir no scheduler/cron (não-interativo)
+   - Implementar para comandos: backup, restore
+   - Mostrar: progresso por database, etapa atual, tempo estimado
+   - **Precedência**: MÉDIA - Melhoria de UX
+   - **Estimativa**: 4-5 horas
+   - **Dependências**: v2.0.0 completo
+
+**Status v2.0.1**: 1 tarefa adicionada  
+**Tempo Total Estimado**: 4-5 horas
+
+---
+
+### v2.1.0 - Advanced Features (Planejado) 🟣
+**Ver**: [docs/ROADMAP_v2.1.0.md](ROADMAP_v2.1.0.md) para detalhes completos
+
+**Features principais**:
+- Backup verification system
+- Parallel execution
+- Incremental backups
+- Prometheus metrics
+- CLI UX improvements
+
+**Status**: Documentado em ROADMAP_v2.1.0.md (8500+ linhas)
 
 ### Technical Debt
 *None identified - code quality maintained at high level*

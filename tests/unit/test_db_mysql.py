@@ -9,8 +9,8 @@ import pytest
 from unittest.mock import Mock, MagicMock, patch
 import subprocess
 
-from vya_backupbd.config.models import DatabaseConfig
-from vya_backupbd.db.mysql import MySQLAdapter
+from python_backup.config.models import DatabaseConfig
+from python_backup.db.mysql import MySQLAdapter
 
 
 class TestMySQLAdapterInitialization:

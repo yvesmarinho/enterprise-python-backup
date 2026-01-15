@@ -17,15 +17,15 @@ Sistema automatizado de backup e restore para bancos de dados MySQL, PostgreSQL 
 > ⚠️ **IMPORTANTE**: Este workspace contém múltiplos diretórios. Apenas um é o projeto ativo.
 
 **Projeto Ativo** (desenvolvimento atual):
-- 📂 `enterprise-vya-backupdb/` ← **VOCÊ ESTÁ AQUI**
+- 📂 `enterprise-python-backup/` ← **VOCÊ ESTÁ AQUI**
   - Branch: `001-phase2-core-development`
   - Nova implementação seguindo metodologia Spec Kit
   - Documentação: `specs/001-phase2-core-development/`
   - **Todos os commits devem ser feitos neste repositório**
 
 **Diretórios de Referência** (⛔ NÃO MODIFICAR):
-- 📂 `../vya_backupbd/` - Codebase legado para consulta
-- 📂 `../enterprise-vya_backupbd/` - Scripts em produção para consulta
+- 📂 `../python_backup/` - Codebase legado para consulta
+- 📂 `../enterprise-python_backup/` - Scripts em produção para consulta
 
 Estes diretórios contêm código existente para análise e referência durante o desenvolvimento da nova versão, mas **não devem ser modificados** durante o desenvolvimento do Phase 2.
 
@@ -123,7 +123,7 @@ vya-backupdb restore --file backup.tar.gz --target /tmp/restored
 Foram identificadas **duas versões principais** do sistema:
 
 #### **1. Versão wfdb02 (Servidor Específico)**
-- **Localização:** `/vya_backupbd/servers/wfdb02/backup/`
+- **Localização:** `/python_backup/servers/wfdb02/backup/`
 - **Versão:** Não especificada
 - **Características:**
   - ✅ Implementação mais moderna com módulo Prometheus
@@ -136,7 +136,7 @@ Foram identificadas **duas versões principais** do sistema:
   - ✅ Limpeza automática de backups antigos
 
 #### **2. Versão Enterprise (Genérica)**
-- **Localização:** `/enterprise-vya_backupbd/usr/local/bin/enterprise/vya_backupbd/`
+- **Localização:** `/enterprise-python_backup/usr/local/bin/enterprise/python_backup/`
 - **Versão:** 0.1.0
 - **Características:**
   - ⚠️ Versão mais antiga porém com código base sólido
@@ -155,11 +155,11 @@ Foram identificadas **duas versões principais** do sistema:
 
 | Arquivo | Versão wfdb02 | Versão Enterprise | Função |
 |---------|---------------|-------------------|--------|
-| **vya_backupbd.py** | 374 linhas | 411 linhas | Script principal |
+| **python_backup.py** | 374 linhas | 411 linhas | Script principal |
 | **backup_control.py** | 605 linhas | 601 linhas | Módulo de backup |
 | **restore.py** | ✅ Existe | ✅ Existe | Módulo de restore |
 | **prometheus_metrics.py** | ✅ Existe | ❌ Não existe | Métricas Prometheus |
-| **vya_backupbd.json** | 101 linhas | 60 linhas | Configuração |
+| **python_backup.json** | 101 linhas | 60 linhas | Configuração |
 | **requirements.txt** | ✅ | ✅ | Dependências |
 
 ### Módulos e Dependências
@@ -527,16 +527,16 @@ wget==3.2
 ### Versão Enterprise
 ```bash
 # Backup
-/usr/local/bin/enterprise/vya_backupbd/vya_backupbd.py -b
+/usr/local/bin/enterprise/python_backup/python_backup.py -b
 
 # Backup com dry-run (teste)
-/usr/local/bin/enterprise/vya_backupbd/vya_backupbd.py -b -d
+/usr/local/bin/enterprise/python_backup/python_backup.py -b -d
 
 # Restore
-/usr/local/bin/enterprise/vya_backupbd/vya_backupbd.py -r 20210922_162528_asterisk.zip
+/usr/local/bin/enterprise/python_backup/python_backup.py -r 20210922_162528_asterisk.zip
 
 # Teste de e-mail
-/usr/local/bin/enterprise/vya_backupbd/vya_backupbd.py -t
+/usr/local/bin/enterprise/python_backup/python_backup.py -t
 ```
 
 ### Versão wfdb02 (Systemd)
@@ -740,20 +740,20 @@ O **VYA Backup Database** é uma solução empresarial completa para gerenciamen
 ## 🏗️ Arquitetura do Sistema
 
 ```
-enterprise-vya-backupdb/
+enterprise-python-backup/
 ├── src/                              # Código fonte (templates)
 │   ├── modules/
 │   │   ├── backup_control.py.template    # Controlador de backup
 │   │   ├── restore.py.template           # Controlador de restore
 │   │   └── prometheus_metrics.py         # Métricas
-│   ├── vya_backupbd.py.template         # Aplicação principal
+│   ├── python_backup.py.template         # Aplicação principal
 │   └── create_secure_config.py          # Gerador de configurações
 │
 ├── servers/                          # Instâncias por servidor
 │   ├── wf004/                       # Exemplo: servidor wf004
 │   │   ├── modules/                 # Módulos compilados
-│   │   ├── vya_backupbd.py         # Script principal
-│   │   ├── vya_backupbd.json       # Configuração do servidor
+│   │   ├── python_backup.py         # Script principal
+│   │   ├── python_backup.json       # Configuração do servidor
 │   │   └── systemd/                # Serviços systemd
 │   └── [outros_servidores]/
 │
@@ -878,8 +878,8 @@ prometheus-client>=0.19.0
 
 ```bash
 # 1. Clone o repositório
-git clone https://github.com/vyatechnologies/enterprise-vya-backupdb.git
-cd enterprise-vya-backupdb
+git clone https://github.com/vyatechnologies/enterprise-python-backup.git
+cd enterprise-python-backup
 
 # 2. Gerar servidor de teste
 make generate SERVER=quickstart \
@@ -892,7 +892,7 @@ cd servers/quickstart
 make config
 
 # 4. Executar primeiro backup
-python3 -m vya_backupbd
+python3 -m python_backup
 
 # 5. Verificar resultado
 ls -lh backups/
@@ -966,7 +966,7 @@ A interface interativa irá solicitar:
 
 ### Configuração Manual
 
-Edite `vya_backupbd.json`:
+Edite `python_backup.json`:
 
 ```json
 {
@@ -1034,17 +1034,17 @@ print(f"Senha criptografada: {encrypted}")
 
 ```bash
 # Backup de todos os bancos configurados
-python3 -m vya_backupbd
+python3 -m python_backup
 
 # Backup apenas de um SGBD
-python3 -m vya_backupbd --dbms mysql
-python3 -m vya_backupbd --dbms postgresql
+python3 -m python_backup --dbms mysql
+python3 -m python_backup --dbms postgresql
 
 # Backup forçado (ignora agendamento)
-python3 -m vya_backupbd --force
+python3 -m python_backup --force
 
 # Modo debug
-python3 -m vya_backupbd --debug
+python3 -m python_backup --debug
 ```
 
 ### Restore Manual
@@ -1117,22 +1117,22 @@ Faz backup de:
 - Objetos globais do PostgreSQL (usuários, roles, tablespaces)
 
 ```bash
-python3 -m vya_backupbd
+python3 -m python_backup
 ```
 
 #### 2. Backup Seletivo por SGBD
 
 ```bash
 # Apenas MySQL
-python3 -m vya_backupbd --dbms mysql
+python3 -m python_backup --dbms mysql
 
 # Apenas PostgreSQL
-python3 -m vya_backupbd --dbms postgresql
+python3 -m python_backup --dbms postgresql
 ```
 
 #### 3. Backup com Filtros
 
-Configure no `vya_backupbd.json`:
+Configure no `python_backup.json`:
 
 ```json
 {
@@ -1178,7 +1178,7 @@ du -sh backups/
 # Estatísticas de backup
 python3 -c "
 from modules.backup_control import BackupController
-bc = BackupController('vya_backupbd.json')
+bc = BackupController('python_backup.json')
 bc.print_backup_statistics()
 "
 ```
@@ -1322,8 +1322,8 @@ src/
 │   ├── backup_control.py.template
 │   ├── restore.py.template
 │   └── prometheus_metrics.py.template
-├── vya_backupbd.py.template
-├── vya_backupbd.json.example
+├── python_backup.py.template
+├── python_backup.json.example
 └── systemd/
     ├── vya-backup.service.template
     └── vya-backup-oneshot.service.template
@@ -1369,7 +1369,7 @@ vya_restore_duration_seconds        # Duração do restore
 
 ### Configurar Pushgateway
 
-No `vya_backupbd.json`:
+No `python_backup.json`:
 
 ```json
 {
@@ -1456,7 +1456,7 @@ journalctl -u vya-backup-servidor.service -n 50
 timedatectl
 
 # 4. Verificar tolerância de minutos
-# Edite tolerance_minutes em vya_backupbd.json
+# Edite tolerance_minutes em python_backup.json
 ```
 
 #### 4. Erro: "locale failed" (PostgreSQL)
@@ -1486,7 +1486,7 @@ Environment="LANG=pt_BR.UTF-8"
 find /backup/vya_backupdb -name "*.zip" -mtime +30 -delete
 
 # 2. Configurar retenção automática
-# Em vya_backupbd.json:
+# Em python_backup.json:
 {
   "backup_options": {
     "retention_days": 7  # Reduzir de 30 para 7
@@ -1578,8 +1578,8 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo LICENSE para d
 
 ## 📞 Suporte
 
-- **Issues**: [GitHub Issues](https://github.com/vyatechnologies/enterprise-vya-backupdb/issues)
-- **Documentação**: [Wiki do Projeto](https://github.com/vyatechnologies/enterprise-vya-backupdb/wiki)
+- **Issues**: [GitHub Issues](https://github.com/vyatechnologies/enterprise-python-backup/issues)
+- **Documentação**: [Wiki do Projeto](https://github.com/vyatechnologies/enterprise-python-backup/wiki)
 - **Email**: suporte@vyatechnologies.com.br
 
 ---

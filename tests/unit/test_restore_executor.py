@@ -10,9 +10,9 @@ from datetime import datetime
 from unittest.mock import Mock, MagicMock, patch, call
 from time import sleep
 
-from vya_backupbd.restore.executor import RestoreExecutor
-from vya_backupbd.restore.context import RestoreContext
-from vya_backupbd.config.models import DatabaseConfig, StorageConfig
+from python_backup.restore.executor import RestoreExecutor
+from python_backup.restore.context import RestoreContext
+from python_backup.config.models import DatabaseConfig, StorageConfig
 
 
 class TestRestoreExecutorCreation:

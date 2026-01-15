@@ -6,7 +6,7 @@ import pytest
 import yaml
 from pydantic import ValidationError
 
-from vya_backupbd.config import (
+from python_backup.config import (
     AppConfig,
     DatabaseConfig,
     LoggingConfig,

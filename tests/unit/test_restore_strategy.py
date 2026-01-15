@@ -9,13 +9,13 @@ from pathlib import Path
 from datetime import datetime
 from unittest.mock import Mock, MagicMock, patch
 
-from vya_backupbd.restore.strategy import (
+from python_backup.restore.strategy import (
     RestoreStrategy,
     FullRestoreStrategy,
     RestoreStrategyFactory
 )
-from vya_backupbd.restore.context import RestoreContext
-from vya_backupbd.config.models import DatabaseConfig, StorageConfig
+from python_backup.restore.context import RestoreContext
+from python_backup.config.models import DatabaseConfig, StorageConfig
 
 
 class TestRestoreStrategyInterface:

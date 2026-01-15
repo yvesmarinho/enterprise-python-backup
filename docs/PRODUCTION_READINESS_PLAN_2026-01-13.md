@@ -53,7 +53,7 @@
    - UsersManager base class
    - MySQL SHOW GRANTS backup
    - PostgreSQL pg_dumpall backup
-   - ConfigLoader for vya_backupbd.json
+   - ConfigLoader for python_backup.json
    - 512 tests passing
 
 ### ❌ What's Missing (Production Blockers)
@@ -65,7 +65,7 @@
    - **This is the #1 blocker for production**
 
 2. **Config Integration** - PARTIALLY DONE ⚠️
-   - vya_backupbd.json exists
+   - python_backup.json exists
    - ConfigLoader exists
    - BUT: Not integrated with BackupExecutor/RestoreExecutor/ScheduleManager
    - Task T104 (HIGH priority)
@@ -89,8 +89,8 @@
 
 **Tasks**:
 ```bash
-✅ T072: Create src/vya_backupbd/__main__.py as CLI entry point
-✅ T073: Create src/vya_backupbd/cli.py with Typer app initialization
+✅ T072: Create src/python_backup/__main__.py as CLI entry point
+✅ T073: Create src/python_backup/cli.py with Typer app initialization
 ✅ T074: Implement `backup` command (--instance, --database, --all)
 ✅ T075: Implement `restore list` command
 ✅ T076: Implement `restore` command
@@ -101,7 +101,7 @@
 **CLI Structure**:
 ```bash
 # Entry point
-python -m vya_backupbd backup --instance prod-mysql-01
+python -m python_backup backup --instance prod-mysql-01
 
 # Or installed via pip
 vya-backupdb backup --instance prod-mysql-01
@@ -111,7 +111,7 @@ vya-backupdb backup --instance prod-mysql-01
 1. `backup` - Execute backup for instance/database
 2. `restore list` - List available backups
 3. `restore` - Execute restore from backup file
-4. `config validate` - Validate vya_backupbd.json
+4. `config validate` - Validate python_backup.json
 5. `config show` - Display configuration
 6. `version` - Show version info
 7. `test-connection` - Test database connection
@@ -120,10 +120,10 @@ vya-backupdb backup --instance prod-mysql-01
 
 ### Priority 2: Config Integration (HIGH - 2-3 hours)
 
-**Goal**: All components read from vya_backupbd.json
+**Goal**: All components read from python_backup.json
 
 **Task T104 Breakdown**:
-1. Create config adapter/parser for vya_backupbd.json
+1. Create config adapter/parser for python_backup.json
 2. Update BackupExecutor to use config
 3. Update RestoreExecutor to use config
 4. Update ScheduleManager to use config
@@ -135,7 +135,7 @@ vya-backupdb backup --instance prod-mysql-01
 db_config = DatabaseConfig(type="mysql", host="localhost", ...)
 
 # NEW (from config file)
-loader = ConfigLoader.from_file("vya_backupbd.json")
+loader = ConfigLoader.from_file("python_backup.json")
 db_configs = loader.get_enabled_databases()
 ```
 
@@ -279,11 +279,11 @@ db_configs = loader.get_enabled_databases()
 ## ✅ Success Criteria
 
 ### Must Have (P0)
-- [X] CLI interface working (`python -m vya_backupbd backup`)
+- [X] CLI interface working (`python -m python_backup backup`)
 - [X] Backup command executes successfully
 - [X] Restore command executes successfully
 - [X] Config integration complete (T104)
-- [X] vya_backupbd.json parsed correctly
+- [X] python_backup.json parsed correctly
 - [X] Integration tests passing
 - [X] End-to-end validation successful
 

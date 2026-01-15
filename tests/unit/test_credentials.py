@@ -9,8 +9,8 @@ import json
 from pathlib import Path
 from unittest.mock import patch, mock_open, MagicMock
 
-from vya_backupbd.security.credentials import CredentialsManager
-from vya_backupbd.config.models import DatabaseConfig
+from python_backup.security.credentials import CredentialsManager
+from python_backup.config.models import DatabaseConfig
 
 
 @pytest.fixture

@@ -11,9 +11,9 @@ import tempfile
 import shutil
 from unittest.mock import patch, MagicMock
 
-from vya_backupbd.backup.executor import BackupExecutor
-from vya_backupbd.backup.context import BackupContext
-from vya_backupbd.config.models import DatabaseConfig, StorageConfig, BackupConfig
+from python_backup.backup.executor import BackupExecutor
+from python_backup.backup.context import BackupContext
+from python_backup.config.models import DatabaseConfig, StorageConfig, BackupConfig
 
 
 @pytest.fixture

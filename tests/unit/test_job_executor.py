@@ -9,9 +9,9 @@ from datetime import datetime
 from unittest.mock import Mock, MagicMock, patch
 from pathlib import Path
 
-from vya_backupbd.schedule.executor import JobExecutor, ScheduledJob
-from vya_backupbd.schedule.config import ScheduleConfig
-from vya_backupbd.config.models import DatabaseConfig, StorageConfig, BackupConfig
+from python_backup.schedule.executor import JobExecutor, ScheduledJob
+from python_backup.schedule.config import ScheduleConfig
+from python_backup.config.models import DatabaseConfig, StorageConfig, BackupConfig
 
 
 class TestScheduledJob:

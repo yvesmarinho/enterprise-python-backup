@@ -7,7 +7,7 @@ Tests metrics collection, Prometheus format, and metric types.
 from datetime import datetime, timedelta
 from pathlib import Path
 import pytest
-from vya_backupbd.monitoring.metrics import (
+from python_backup.monitoring.metrics import (
     MetricsCollector,
     BackupMetrics,
     RestoreMetrics,

@@ -11,8 +11,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import ArgumentError
 
-from vya_backupbd.config.models import DatabaseConfig
-from vya_backupbd.db.engine import create_db_engine, get_connection_string
+from python_backup.config.models import DatabaseConfig
+from python_backup.db.engine import create_db_engine, get_connection_string
 
 
 class TestGetConnectionString:

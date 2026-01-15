@@ -10,8 +10,8 @@ from datetime import datetime
 from pathlib import Path
 from unittest.mock import Mock, MagicMock
 
-from vya_backupbd.backup.context import BackupContext
-from vya_backupbd.config.models import DatabaseConfig, StorageConfig, BackupConfig
+from python_backup.backup.context import BackupContext
+from python_backup.config.models import DatabaseConfig, StorageConfig, BackupConfig
 
 
 class TestBackupContextCreation:

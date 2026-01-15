@@ -35,17 +35,17 @@
 
 **Workspace Location**:
 ```
-/home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-vya-backupdb/
+/home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-python-backup/
 ```
 
 **Workspace Root (MCP)**:
 ```
-file:///home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-vya-backupdb
+file:///home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-python-backup
 ```
 
 **Completed Files**:
 ```
-enterprise-vya-backupdb/
+enterprise-python-backup/
 ├── .venv/                          # Virtual environment (uv)
 ├── .gitignore                      # Comprehensive ignore patterns
 ├── pyproject.toml                  # Project configuration
@@ -54,7 +54,7 @@ enterprise-vya-backupdb/
 │   └── templates/
 ├── .secrets/
 │   └── credentials.example.json    # Credential structure
-├── src/vya_backupbd/
+├── src/python_backup/
 │   ├── __init__.py                 # Package exports
 │   ├── config/
 │   │   ├── __init__.py             # Config module exports
@@ -78,11 +78,11 @@ enterprise-vya-backupdb/
 ---------- coverage: platform linux, python 3.12.3-final-0 -----------
 Name                                      Stmts   Miss    Cover
 ----------------------------------------------------------------
-src/vya_backupbd/__init__.py                  6      0  100.00%
-src/vya_backupbd/config/__init__.py           2      0  100.00%
-src/vya_backupbd/config/models.py            50      0  100.00%
-src/vya_backupbd/security/__init__.py         2      0  100.00%
-src/vya_backupbd/security/encryption.py      23      0  100.00%
+src/python_backup/__init__.py                  6      0  100.00%
+src/python_backup/config/__init__.py           2      0  100.00%
+src/python_backup/config/models.py            50      0  100.00%
+src/python_backup/security/__init__.py         2      0  100.00%
+src/python_backup/security/encryption.py      23      0  100.00%
 ----------------------------------------------------------------
 TOTAL                                        83      0  100.00%
 ```
@@ -94,7 +94,7 @@ TOTAL                                        83      0  100.00%
 ### 1. Activate Environment
 
 ```bash
-cd /home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-vya-backupdb
+cd /home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-python-backup
 source .venv/bin/activate
 git checkout 001-phase2-core-development
 ```
@@ -106,7 +106,7 @@ git checkout 001-phase2-core-development
 python --version  # Should be 3.12.3
 
 # Run tests to confirm everything works
-pytest tests/unit/ -v --cov=src/vya_backupbd --cov-report=term-missing
+pytest tests/unit/ -v --cov=src/python_backup --cov-report=term-missing
 
 # Expected: 28 passed, 100% coverage
 ```
@@ -181,11 +181,11 @@ tests/integration/test_postgresql_connection.py # testcontainers PostgreSQL
 **Step 2: Implement Database Layer** [Sequential - One by one]
 ```bash
 # T022-T028: Implementation
-src/vya_backupbd/db/__init__.py       # Module setup
-src/vya_backupbd/db/engine.py         # SQLAlchemy Core engine factory
-src/vya_backupbd/db/base.py           # Abstract DatabaseAdapter
-src/vya_backupbd/db/mysql.py          # MySQLAdapter implementation
-src/vya_backupbd/db/postgresql.py     # PostgreSQLAdapter implementation
+src/python_backup/db/__init__.py       # Module setup
+src/python_backup/db/engine.py         # SQLAlchemy Core engine factory
+src/python_backup/db/base.py           # Abstract DatabaseAdapter
+src/python_backup/db/mysql.py          # MySQLAdapter implementation
+src/python_backup/db/postgresql.py     # PostgreSQLAdapter implementation
 # T027: Add connection pooling and error handling
 # T028: Add logging for database operations
 ```
@@ -264,7 +264,7 @@ src/vya_backupbd/db/postgresql.py     # PostgreSQLAdapter implementation
 pytest tests/ -v
 
 # Run tests with coverage
-pytest tests/ -v --cov=src/vya_backupbd --cov-report=term-missing
+pytest tests/ -v --cov=src/python_backup --cov-report=term-missing
 
 # Run specific test file
 pytest tests/unit/test_config.py -v

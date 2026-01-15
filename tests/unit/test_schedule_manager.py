@@ -10,8 +10,8 @@ from datetime import datetime, timedelta
 from unittest.mock import Mock, MagicMock, patch
 import json
 
-from vya_backupbd.schedule.manager import ScheduleManager, ScheduleExecution
-from vya_backupbd.schedule.config import ScheduleConfig
+from python_backup.schedule.manager import ScheduleManager, ScheduleExecution
+from python_backup.schedule.config import ScheduleConfig
 
 
 class TestScheduleExecution:

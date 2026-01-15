@@ -8,8 +8,8 @@ These tests verify actual database connectivity and operations.
 import pytest
 from testcontainers.mysql import MySqlContainer
 
-from vya_backupbd.config.models import DatabaseConfig
-from vya_backupbd.db.mysql import MySQLAdapter
+from python_backup.config.models import DatabaseConfig
+from python_backup.db.mysql import MySQLAdapter
 
 
 @pytest.fixture(scope="module")

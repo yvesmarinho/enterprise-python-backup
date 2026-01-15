@@ -6,13 +6,13 @@ Tests user backup/restore with actual MySQL and PostgreSQL databases.
 import pytest
 from pathlib import Path
 from datetime import datetime
-from vya_backupbd.users.manager import UsersManager, DatabaseType
-from vya_backupbd.config import load_config
+from python_backup.users.manager import UsersManager, DatabaseType
+from python_backup.config import load_config
 import os
 import shutil
 
 
-# Try to load configuration from vya_backupbd.json
+# Try to load configuration from python_backup.json
 try:
     config = load_config()
     # Get first enabled MySQL database

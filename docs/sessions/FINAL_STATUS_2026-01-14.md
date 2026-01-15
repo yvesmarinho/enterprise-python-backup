@@ -60,7 +60,7 @@
 
 ### Source Code (17 files)
 ```
-src/vya_backupbd/
+src/python_backup/
 ├── __init__.py (5 lines)
 ├── cli.py (712 lines) ✅ Modified today
 ├── backup/
@@ -138,7 +138,7 @@ config/
 └── templates/
 
 Root:
-├── vya_backupbd.json (80 lines) ✅ Modified today
+├── python_backup.json (80 lines) ✅ Modified today
 ├── pyproject.toml
 └── README.md (1520 lines) ✅ Modified today
 ```
@@ -171,7 +171,7 @@ pytest tests/unit/test_db_files.py -v  # 25 passed
 pytest tests/integration/test_files_backup_integration.py -v  # 18 passed
 
 # Full suite (to be run next session)
-pytest tests/ -v --cov=src/vya_backupbd
+pytest tests/ -v --cov=src/python_backup
 ```
 
 ### Test Coverage
@@ -183,7 +183,7 @@ pytest tests/ -v --cov=src/vya_backupbd
 
 ## Configuration State
 
-### Active Configuration (vya_backupbd.json)
+### Active Configuration (python_backup.json)
 ```json
 {
   "db_config": [
@@ -264,13 +264,13 @@ Changes to be committed:
 ```
 
 ### Modified Files
-1. src/vya_backupbd/cli.py
-2. src/vya_backupbd/backup/strategy.py
-3. src/vya_backupbd/config/loader.py
-4. src/vya_backupbd/config/models.py
-5. src/vya_backupbd/utils/email_sender.py
-6. src/vya_backupbd/utils/logging_config.py
-7. vya_backupbd.json
+1. src/python_backup/cli.py
+2. src/python_backup/backup/strategy.py
+3. src/python_backup/config/loader.py
+4. src/python_backup/config/models.py
+5. src/python_backup/utils/email_sender.py
+6. src/python_backup/utils/logging_config.py
+7. python_backup.json
 8. README.md
 9. docs/TODO.md (pending)
 10. docs/INDEX.md (pending)
@@ -278,8 +278,8 @@ Changes to be committed:
 12-13. Other minor updates
 
 ### New Files
-1. src/vya_backupbd/db/files.py
-2. src/vya_backupbd/utils/retention_manager.py
+1. src/python_backup/db/files.py
+2. src/python_backup/utils/retention_manager.py
 3. tests/unit/test_db_files.py
 4. tests/integration/test_files_backup_integration.py
 5. docs/guides/FILES_BACKUP_GUIDE.md

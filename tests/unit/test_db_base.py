@@ -10,8 +10,8 @@ from abc import ABC
 from sqlalchemy.engine import Engine
 from unittest.mock import Mock, MagicMock, patch
 
-from vya_backupbd.config.models import DatabaseConfig
-from vya_backupbd.db.base import DatabaseAdapter
+from python_backup.config.models import DatabaseConfig
+from python_backup.db.base import DatabaseAdapter
 
 
 class TestDatabaseAdapterInterface:

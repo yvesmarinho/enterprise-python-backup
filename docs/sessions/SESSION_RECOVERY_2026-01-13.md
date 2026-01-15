@@ -17,7 +17,7 @@
    - Created UsersManager base class with backup/restore methods
    - Implemented MySQL user backup via SHOW GRANTS
    - Implemented PostgreSQL role backup via pg_dumpall
-   - Created ConfigLoader for vya_backupbd.json parsing
+   - Created ConfigLoader for python_backup.json parsing
    - Generated 18,269 test records across MySQL + PostgreSQL
 
 2. **Test Suite Expansion**
@@ -36,25 +36,25 @@
 
 **Workspace Location**:
 ```
-/home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-vya-backupdb/
+/home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-python-backup/
 ```
 
 **Workspace Root (MCP)**:
 ```
-file:///home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-vya-backupdb
+file:///home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-python-backup
 ```
 
 **Python Environment**:
 ```
-Active: /home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-vya-backupdb/.venv/bin/python
+Active: /home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-python-backup/.venv/bin/python
 Version: 3.12.3
 Manager: uv
 ```
 
 **Completed Files (Phase 10)**:
 ```
-enterprise-vya-backupdb/
-├── src/vya_backupbd/
+enterprise-python-backup/
+├── src/python_backup/
 │   ├── users/
 │   │   ├── __init__.py             # Module exports (9 lines)
 │   │   ├── manager.py              # UsersManager base (254 lines)
@@ -67,7 +67,7 @@ enterprise-vya-backupdb/
 │   │   └── test_users_manager.py   # 28 unit tests (344 lines)
 │   └── integration/
 │       └── test_users_backup_integration.py  # 9 tests (285 lines)
-└── vya_backupbd.json               # Main configuration file
+└── python_backup.json               # Main configuration file
 ```
 
 **Test Results**:
@@ -90,7 +90,7 @@ Coverage: Not measured this session
 ### 1. Activate Environment
 
 ```bash
-cd /home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-vya-backupdb
+cd /home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-python-backup
 source .venv/bin/activate
 git checkout 001-phase2-core-development
 ```
@@ -171,16 +171,16 @@ git branch --show-current
 
 ### Current Phase Status
 - **Phase 10: User Backup/Restore** - 5/19 tasks complete (26%)
-- **Next Priority**: T104 (Refactor to use vya_backupbd.json)
+- **Next Priority**: T104 (Refactor to use python_backup.json)
 
 ### Tasks Breakdown
 
 **HIGH PRIORITY** [Start here]:
 ```bash
-T104: Refactor codebase to use vya_backupbd.json
-  - Update BackupExecutor to read from vya_backupbd.json
-  - Update RestoreExecutor to read from vya_backupbd.json
-  - Update ScheduleManager to read from vya_backupbd.json
+T104: Refactor codebase to use python_backup.json
+  - Update BackupExecutor to read from python_backup.json
+  - Update RestoreExecutor to read from python_backup.json
+  - Update ScheduleManager to read from python_backup.json
   - Update CLI commands to use ConfigLoader
   - Remove hardcoded config references
   Estimated: 2-3 hours
@@ -245,20 +245,20 @@ Test Database: test_inventory
 
 ### Configuration File
 
-**vya_backupbd.json** (project root):
+**python_backup.json** (project root):
 - Defines all backup configurations
 - Multiple database sections (enterprise-vya-jobs, wfdb02, cmdb, etc.)
-- Use ConfigLoader to parse: `ConfigLoader.from_file("vya_backupbd.json")`
+- Use ConfigLoader to parse: `ConfigLoader.from_file("python_backup.json")`
 
 ### Key Classes
 
-1. **UsersManager** (`src/vya_backupbd/users/manager.py`)
+1. **UsersManager** (`src/python_backup/users/manager.py`)
    - `backup_users(db_adapter, output_dir)` - Backs up all non-system users
    - `restore_users(db_adapter, backup_path)` - Restores users from backup file
    - `list_users(db_adapter)` - Returns list of UserInfo objects
 
-2. **ConfigLoader** (`src/vya_backupbd/config/loader.py`)
-   - `from_file(path)` - Parse vya_backupbd.json
+2. **ConfigLoader** (`src/python_backup/config/loader.py`)
+   - `from_file(path)` - Parse python_backup.json
    - `get_enabled_databases()` - Returns databases with enabled=true
    - `get_database_by_name(name)` - Get specific database config
 
@@ -297,7 +297,7 @@ pytest tests/unit/ -v
 pytest tests/unit/test_users_manager.py -v
 
 # Run with coverage
-pytest tests/unit/ --cov=src/vya_backupbd --cov-report=term-missing
+pytest tests/unit/ --cov=src/python_backup --cov-report=term-missing
 
 # Test MySQL connection
 mysql -h 192.168.15.197 -u root -pW123Mudar -e "SHOW DATABASES;"
@@ -309,7 +309,7 @@ PGPASSWORD=W123Mudar psql -h 192.168.15.197 -U postgres -l
 python tests/generate_test_data.py
 
 # View current config
-cat vya_backupbd.json | jq '.databases[] | select(.enabled==true)'
+cat python_backup.json | jq '.databases[] | select(.enabled==true)'
 
 # Check git status
 git status

@@ -3,7 +3,7 @@
 ## Quick Start
 
 ```bash
-cd /home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-vya-backupdb
+cd /home/yves_marinho/Documentos/DevOps/Vya-Jobs/enterprise-python-backup
 source .venv/bin/activate
 git status
 ```
@@ -24,7 +24,7 @@ git status
 - **Integration**: CLI, BackupStrategy, BackupManager
 
 **Key Files**:
-- `src/vya_backupbd/db/files.py` (NEW)
+- `src/python_backup/db/files.py` (NEW)
 - `tests/unit/test_db_files.py` (NEW)
 - `tests/integration/test_files_backup_integration.py` (NEW)
 - `docs/guides/FILES_BACKUP_GUIDE.md` (NEW)
@@ -39,13 +39,13 @@ git status
 - `RetentionManager` class (280 lines)
 - Age-based cleanup with dry-run mode
 - Statistics tracking
-- File: `src/vya_backupbd/utils/retention_manager.py` (NEW)
+- File: `src/python_backup/utils/retention_manager.py` (NEW)
 
 ## Files Modified
 
 **Created (7)**:
-1. src/vya_backupbd/db/files.py
-2. src/vya_backupbd/utils/retention_manager.py
+1. src/python_backup/db/files.py
+2. src/python_backup/utils/retention_manager.py
 3. tests/unit/test_db_files.py
 4. tests/integration/test_files_backup_integration.py
 5. docs/guides/FILES_BACKUP_GUIDE.md
@@ -53,15 +53,15 @@ git status
 7. scripts/utils/test_email_failure.py
 
 **Modified (11)**:
-1. src/vya_backupbd/cli.py
-2. src/vya_backupbd/utils/email_sender.py
-3. src/vya_backupbd/utils/logging_config.py
-4. src/vya_backupbd/backup/strategy.py
-5. src/vya_backupbd/config/models.py
-6. src/vya_backupbd/config/loader.py
-7. src/vya_backupbd/utils/backup_manager.py
-8. src/vya_backupbd/db/__init__.py
-9. vya_backupbd.json
+1. src/python_backup/cli.py
+2. src/python_backup/utils/email_sender.py
+3. src/python_backup/utils/logging_config.py
+4. src/python_backup/backup/strategy.py
+5. src/python_backup/config/models.py
+6. src/python_backup/config/loader.py
+7. src/python_backup/utils/backup_manager.py
+8. src/python_backup/db/__init__.py
+9. python_backup.json
 10. README.md
 11. docs/sessions/TASK_LIST_FILE_BACKUP_2026-01-14.md
 
@@ -74,7 +74,7 @@ git status
 
 ## Configuration
 
-### vya_backupbd.json Updates
+### python_backup.json Updates
 ```json
 {
   "db_config": [
@@ -104,10 +104,10 @@ git status
 
 ```bash
 # File backup
-python -m vya_backupbd.cli backup --instance 3
+python -m python_backup.cli backup --instance 3
 
 # List backups
-python -m vya_backupbd.cli restore-list --instance 3
+python -m python_backup.cli restore-list --instance 3
 
 # Test email
 python scripts/utils/test_email_failure.py

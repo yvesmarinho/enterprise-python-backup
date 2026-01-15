@@ -2,6 +2,37 @@
 
 ## 🗓️ Sessões Recentes
 
+### Sessão 2026-01-15 (Quarta-feira) ⏳ EM PROGRESSO
+**Status**: ⏳ Test Suite + CLI Retention + E2E Testing  
+**Branch**: `001-phase2-core-development`  
+**Progress**: 80.2% Complete (97/121 tasks)  
+**Tests**: 531+ passing
+
+**Documentos**:
+- [SESSION_RECOVERY_2026-01-15.md](sessions/SESSION_RECOVERY_2026-01-15.md) - Guia completo de recuperação
+- [TODAY_ACTIVITIES_2026-01-15.md](sessions/TODAY_ACTIVITIES_2026-01-15.md) - Atividades de hoje
+
+**Objetivos da Sessão**:
+- 🔴 HIGH: Executar suite completa de testes (531+ testes)
+- ❌ ~~HIGH: Implementar comandos CLI de retenção~~ (CANCELADO - processo produção não usa retenção local)
+- 🔴 HIGH: Testes end-to-end (PostgreSQL, MySQL, Files)
+- 🟡 MEDIUM: Validar restore PostgreSQL com fixes
+- 🟡 MEDIUM: Atualizar documentação
+
+**Processo de Produção Documentado**:
+- 00:30h → vya_backupdb executa (gera /tmp/bkpsql + /tmp/bkpzip)
+- 00:30-03:00h → Idrive monitora e faz upload (/tmp/bkpzip → cloud)
+- 05:00h → Cron limpa pastas locais (sem retenção local)
+
+**Progresso Atual**:
+- ✅ Recuperação de sessão completa
+- ✅ Documentação organizada (INDEX, TODO, TODAY_ACTIVITIES, SESSION_RECOVERY)
+- ✅ Processo de backup em produção documentado
+- ⏳ Execução de testes pendente
+- ❌ Implementação CLI de retenção cancelada (não necessária)
+
+---
+
 ### Sessão 2026-01-14 (Terça-feira) ⭐ SESSÃO COMPLETA
 **Status**: ✅ File Backup System + Email Enhancement + RetentionManager Complete  
 **Branch**: `001-phase2-core-development`  
@@ -108,13 +139,13 @@
 **Conquistas**:
 - ✅ Test data generation: 18,269 registros (MySQL + PostgreSQL)
 - ✅ UsersManager implementation: MySQL SHOW GRANTS + PostgreSQL pg_dumpall
-- ✅ Config loader for vya_backupbd.json
+- ✅ Config loader for python_backup.json
 - ✅ 28 unit tests + 9 integration tests created
 - ✅ 3 critical blockers resolved (Faker, psycopg, PostgreSQL auth)
 - ✅ 4 technical reports + 3 session reports
 
 **Próximos Passos**:
-- 🎯 T104: Refactor codebase to use vya_backupbd.json (HIGH priority)
+- 🎯 T104: Refactor codebase to use python_backup.json (HIGH priority)
 - 🎯 Implement restore functionality (_restore_mysql_users, _restore_postgresql_roles)
 - 🎯 Execute integration tests
 
@@ -212,16 +243,16 @@
 **Tamanho:** 150+ linhas  
 **Função:** Reorganização automatizada dos 3 projetos  
 **Executa:**
-- Move 7 arquivos do vya_backupbd
-- Move 4 arquivos do enterprise-vya_backupbd
-- Cria estrutura completa do enterprise-vya-backupdb
+- Move 7 arquivos do python_backup
+- Move 4 arquivos do enterprise-python_backup
+- Cria estrutura completa do enterprise-python-backup
 - Remove arquivo temporário
 - Cria arquivos __init__.py
 - Exibe resumo das mudanças
 
 **Como usar:**
 ```bash
-cd /path/to/enterprise-vya-backupdb
+cd /path/to/enterprise-python-backup
 ./scripts/reorganizar_projetos.sh
 ```
 
@@ -240,7 +271,7 @@ cd /path/to/enterprise-vya-backupdb
 
 **Como usar:**
 ```bash
-cd /path/to/enterprise-vya-backupdb
+cd /path/to/enterprise-python-backup
 ./scripts/verificar_reorganizacao.sh
 ```
 
@@ -258,7 +289,7 @@ cd /path/to/enterprise-vya-backupdb
 
 **Como usar:**
 ```bash
-cd /path/to/enterprise-vya-backupdb
+cd /path/to/enterprise-python-backup
 ./scripts/visualizar_reorganizacao.sh
 ```
 
@@ -388,8 +419,8 @@ cat docs/RESUMO_SESSAO.md
 
 ### 3. Validar (Próximos passos)
 ```bash
-# Testar vya_backupbd
-cd ../vya_backupbd
+# Testar python_backup
+cd ../python_backup
 make help
 pytest tests/
 
@@ -425,17 +456,18 @@ python convert_readme.py
 
 ### Documentação Interna
 - [README Principal](../README.md) - 1501 linhas
-- [README vya_backupbd](../../vya_backupbd/README.md) - 288 linhas
-- [README enterprise-vya_backupbd](../../enterprise-vya_backupbd/README.md) - 60 linhas
+- [README python_backup](../../python_backup/README.md) - 288 linhas
+- [README enterprise-python_backup](../../enterprise-python_backup/README.md) - 60 linhas
 
 ### Documentação Técnica
 - [Postgres Backup Métodos](Postgres%20Backup%20Completo%20Metodos.md)
 - [Postgres Erro no Restore](Postgres%20erro%20no%20restore.md)
+- [PRODUCTION_BACKUP_PROCESS.md](technical/PRODUCTION_BACKUP_PROCESS.md) - Processo de backup em produção (sem retenção local)
 
 ### Scripts de Projeto
-- [Makefile vya_backupbd](../../vya_backupbd/Makefile)
-- [setup.py vya_backupbd](../../vya_backupbd/setup.py)
-- [pyproject.toml enterprise-vya_backupbd](../../enterprise-vya_backupbd/pyproject.toml)
+- [Makefile python_backup](../../python_backup/Makefile)
+- [setup.py python_backup](../../python_backup/setup.py)
+- [pyproject.toml enterprise-python_backup](../../enterprise-python_backup/pyproject.toml)
 
 ---
 

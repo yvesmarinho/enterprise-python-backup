@@ -6,7 +6,7 @@ import pytest
 from datetime import datetime
 from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
-from vya_backupbd.users.manager import (
+from python_backup.users.manager import (
     UsersManager,
     UserBackupMetadata,
     UserInfo,

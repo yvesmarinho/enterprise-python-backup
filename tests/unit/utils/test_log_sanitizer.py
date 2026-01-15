@@ -4,7 +4,7 @@ Tests for log_sanitizer module.
 
 import pytest
 from dataclasses import dataclass
-from vya_backupbd.utils.log_sanitizer import LogSanitizer, sanitize, sanitize_string, safe_repr
+from python_backup.utils.log_sanitizer import LogSanitizer, sanitize, sanitize_string, safe_repr
 
 
 @dataclass

@@ -9,9 +9,9 @@ from pathlib import Path
 from datetime import datetime
 from unittest.mock import Mock, MagicMock, patch, call
 
-from vya_backupbd.backup.executor import BackupExecutor
-from vya_backupbd.backup.context import BackupContext
-from vya_backupbd.config.models import DatabaseConfig, StorageConfig, BackupConfig
+from python_backup.backup.executor import BackupExecutor
+from python_backup.backup.context import BackupContext
+from python_backup.config.models import DatabaseConfig, StorageConfig, BackupConfig
 
 
 class TestBackupExecutorCreation:

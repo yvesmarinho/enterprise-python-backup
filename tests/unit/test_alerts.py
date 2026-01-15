@@ -6,7 +6,7 @@ Tests alert rules, thresholds, and condition evaluation.
 
 from datetime import datetime, timedelta
 import pytest
-from vya_backupbd.monitoring.alerts import (
+from python_backup.monitoring.alerts import (
     AlertRule,
     AlertCondition,
     AlertSeverity,
@@ -14,7 +14,7 @@ from vya_backupbd.monitoring.alerts import (
     AlertTrigger,
     ThresholdType,
 )
-from vya_backupbd.monitoring.metrics import BackupMetrics, RestoreMetrics
+from python_backup.monitoring.metrics import BackupMetrics, RestoreMetrics
 
 
 class TestAlertCondition:

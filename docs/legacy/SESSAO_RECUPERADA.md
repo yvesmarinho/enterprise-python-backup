@@ -9,7 +9,7 @@
 
 ## 📊 Status dos Projetos
 
-### 1. **enterprise-vya-backupdb** (Projeto Principal/Unificado)
+### 1. **enterprise-python-backup** (Projeto Principal/Unificado)
 - **Objetivo:** Criar versão unificada consolidando as melhores práticas
 - **Status:** Projeto em desenvolvimento inicial
 - **Versão Atual Analisada:** 0.3.00
@@ -17,7 +17,7 @@
 
 **Estrutura Atual:**
 ```
-enterprise-vya-backupdb/
+enterprise-python-backup/
 ├── README.md (1501 linhas - documentação completa)
 ├── .copilot-rules.md (regras obrigatórias)
 ├── .copilot-strict-rules.md (regras críticas P0)
@@ -28,7 +28,7 @@ enterprise-vya-backupdb/
 └── scripts/ (scripts de automação)
 ```
 
-### 2. **vya_backupbd** (Sistema de Templates)
+### 2. **python_backup** (Sistema de Templates)
 - **Objetivo:** Sistema de geração de código para múltiplos servidores
 - **Tipo:** Template engine + gerenciador multi-servidor
 - **Funcionalidades:**
@@ -49,7 +49,7 @@ enterprise-vya-backupdb/
 - requirements-old.txt (legado → docs/legacy/)
 ```
 
-### 3. **enterprise-vya_backupbd** (Versão Enterprise Legacy)
+### 3. **enterprise-python_backup** (Versão Enterprise Legacy)
 - **Objetivo:** Versão 0.1.0 genérica/base do sistema
 - **Status:** Legacy - será consolidado no projeto principal
 - **Características:** Código base sólido, menos recursos
@@ -69,7 +69,7 @@ enterprise-vya-backupdb/
 
 ## 📋 Análise Detalhada dos README.md
 
-### 1. enterprise-vya-backupdb/README.md
+### 1. enterprise-python-backup/README.md
 **Tamanho:** 1501 linhas  
 **Conteúdo Principal:**
 - Visão geral do projeto unificado
@@ -91,7 +91,7 @@ enterprise-vya-backupdb/
 - 🛠️ Melhorias Propostas
 - 📈 Pontos Fortes
 
-### 2. vya_backupbd/README.md
+### 2. python_backup/README.md
 **Tamanho:** 288 linhas  
 **Conteúdo Principal:**
 - Sistema de template para múltiplos servidores
@@ -108,7 +108,7 @@ enterprise-vya-backupdb/
 - 🚀 Geração automatizada via templates
 - 🧪 Sistema de testes
 
-### 3. enterprise-vya_backupbd/README.md
+### 3. enterprise-python_backup/README.md
 **Tamanho:** ~60 linhas  
 **Conteúdo Principal:**
 - Documentação básica do sistema legacy
@@ -125,7 +125,7 @@ enterprise-vya-backupdb/
 
 #### **Versão wfdb02** (Mais Completa)
 ```
-Localização: /vya_backupbd/servers/wfdb02/backup/
+Localização: /python_backup/servers/wfdb02/backup/
 Features:
 ✅ Prometheus metrics
 ✅ Agendamento avançado
@@ -138,7 +138,7 @@ Features:
 
 #### **Versão Enterprise** (Base Sólida)
 ```
-Localização: /enterprise-vya_backupbd/usr/local/bin/enterprise/vya_backupbd/
+Localização: /enterprise-python_backup/usr/local/bin/enterprise/python_backup/
 Features:
 ✅ Teste de conectividade
 ✅ Múltiplos caminhos para global_functions
@@ -272,9 +272,9 @@ wget==3.2
 
 ## 🗂️ Estrutura de Pastas Recomendada
 
-### Para enterprise-vya-backupdb (Projeto Principal):
+### Para enterprise-python-backup (Projeto Principal):
 ```
-enterprise-vya-backupdb/
+enterprise-python-backup/
 ├── README.md
 ├── .copilot-*.md
 ├── pyproject.toml
@@ -290,7 +290,7 @@ enterprise-vya-backupdb/
 │   └── technical/
 │
 ├── src/
-│   └── vya_backupbd/
+│   └── python_backup/
 │       ├── __init__.py
 │       ├── __main__.py
 │       ├── core/
@@ -318,9 +318,9 @@ enterprise-vya-backupdb/
 └── logs/
 ```
 
-### Para vya_backupbd (Templates):
+### Para python_backup (Templates):
 ```
-vya_backupbd/
+python_backup/
 ├── README.md
 ├── Makefile
 ├── requirements.txt
@@ -343,9 +343,9 @@ vya_backupbd/
     └── legacy/
 ```
 
-### Para enterprise-vya_backupbd (Legacy):
+### Para enterprise-python_backup (Legacy):
 ```
-enterprise-vya_backupbd/
+enterprise-python_backup/
 ├── README.md
 ├── pyproject.toml
 │
@@ -395,12 +395,12 @@ enterprise-vya_backupbd/
 ## 📝 Notas Importantes
 
 1. **Três workspaces ativos** no VS Code:
-   - `/enterprise-vya-backupdb` (principal)
-   - `/vya_backupbd` (templates)
-   - `/enterprise-vya_backupbd` (legacy)
+   - `/enterprise-python-backup` (principal)
+   - `/python_backup` (templates)
+   - `/enterprise-python_backup` (legacy)
 
 2. **Arquivo atual aberto:** 
-   - `/enterprise-vya-backupdb/README.md`
+   - `/enterprise-python-backup/README.md`
 
 3. **MCP Pylance ativo:**
    - Workspace roots detectados
@@ -417,7 +417,7 @@ enterprise-vya_backupbd/
 
 ## 🔧 Comandos Úteis Identificados
 
-### vya_backupbd (Templates):
+### python_backup (Templates):
 ```bash
 make generate SERVER=nome     # Gerar código para servidor
 make config                   # Configurar com segurança
@@ -425,12 +425,12 @@ make install SERVER=nome      # Instalar serviços
 make list-servers            # Listar servidores
 ```
 
-### enterprise-vya_backupbd (Legacy):
+### enterprise-python_backup (Legacy):
 ```bash
-./vya_backupbd.py -b         # Backup
-./vya_backupbd.py -b -d      # Dry-run (teste)
-./vya_backupbd.py -r FILE    # Restore
-./vya_backupbd.py -t         # Testar e-mail
+./python_backup.py -b         # Backup
+./python_backup.py -b -d      # Dry-run (teste)
+./python_backup.py -r FILE    # Restore
+./python_backup.py -t         # Testar e-mail
 ```
 
 ---

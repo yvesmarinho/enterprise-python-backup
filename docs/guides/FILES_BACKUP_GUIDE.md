@@ -38,7 +38,7 @@ The File Backup feature allows you to backup and restore files and directories u
 
 ### Basic Configuration
 
-Add a file backup instance to `vya_backupbd.json`:
+Add a file backup instance to `python_backup.json`:
 
 ```json
 {
@@ -368,7 +368,7 @@ sudo -u backupuser vya-backupdb backup --instance 1
 ls -la /path/to/files/**/*.json
 
 # Verify pattern in config
-cat vya_backupbd.json | jq '.db_config[] | select(.id_dbms==1) | .db_list'
+cat python_backup.json | jq '.db_config[] | select(.id_dbms==1) | .db_list'
 
 # Use absolute paths
 "/opt/app/**/*"  # ✅ Good
@@ -391,7 +391,7 @@ df -h /backup/files
 vya-backupdb retention cleanup --instance 1
 
 # Change backup destination
-# Edit vya_backupbd.json:
+# Edit python_backup.json:
 "path_files": "/mnt/external/backup/files"
 ```
 

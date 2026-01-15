@@ -7,7 +7,7 @@ Tests notification channels with multiple recipients for success vs failure/aler
 from datetime import datetime
 from typing import Dict, Any
 import pytest
-from vya_backupbd.monitoring.notifications import (
+from python_backup.monitoring.notifications import (
     NotificationChannel,
     EmailChannel,
     SlackChannel,
@@ -17,7 +17,7 @@ from vya_backupbd.monitoring.notifications import (
     NotificationPriority,
     NotificationType,
 )
-from vya_backupbd.monitoring.alerts import AlertTrigger, AlertSeverity
+from python_backup.monitoring.alerts import AlertTrigger, AlertSeverity
 
 
 class TestNotificationRecipient:
