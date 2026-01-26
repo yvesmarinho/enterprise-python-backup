@@ -194,18 +194,18 @@ def backup(
         
         # Determine databases to backup
         if database:
-            # Backup single database
+            # Backup single database (CLI override)
             databases_to_backup = [database]
         else:
-            # Backup all databases (excluding db_ignore)
+            # Backup databases according to filter rules
             try:
                 if db_entry.dbms == "files":
-                    # For files, use db_list patterns directly
-                    databases_to_backup = db_entry.db_list if db_entry.db_list else []
+                    # For files, use database patterns directly (backward compat: db_list -> database)
+                    databases_to_backup = getattr(db_entry, 'database', []) or getattr(db_entry, 'db_list', []) or []
                     console.print(f"[cyan]Found {len(databases_to_backup)} file patterns to backup[/cyan]")
                     logger.info(f"Found {len(databases_to_backup)} patterns: {', '.join(databases_to_backup)}")
                 else:
-                    # For MySQL/PostgreSQL: list databases via connection
+                    # For MySQL/PostgreSQL: list databases and apply filters
                     list_db = "information_schema" if db_entry.dbms == "mysql" else "postgres"
                     temp_config = DatabaseConfig(
                         type=db_entry.dbms,
@@ -213,12 +213,17 @@ def backup(
                         port=int(db_entry.port),
                         username=db_entry.user,
                         password=db_entry.secret,
-                        database=list_db
+                        database=list_db,
+                        databases=getattr(db_entry, 'database', []),  # New field
+                        db_ignore=db_entry.db_ignore  # Already a list
                     )
                     from python_backup.backup.strategy import get_database_adapter
                     temp_adapter = get_database_adapter(temp_config)
                     all_databases = temp_adapter.get_databases()
-                    databases_to_backup = [db for db in all_databases if db not in db_entry.db_ignore]
+                    
+                    # Use new filtering method with precedence rules
+                    databases_to_backup = temp_adapter.get_filtered_databases(all_databases)
+                    
                     console.print(f"[cyan]Found {len(databases_to_backup)} databases to backup[/cyan]")
                     logger.info(f"Found {len(databases_to_backup)} databases: {', '.join(databases_to_backup)}")
             except Exception as e:
@@ -719,18 +724,39 @@ def test_connection(
 
 @app.command("vault-add")
 def vault_add(
-    credential_id: str = typer.Option(..., "--id", help="Credential identifier (e.g., mysql-prod)"),
-    username: str = typer.Option(..., "--username", "-u", help="Username"),
-    password: str = typer.Option(..., "--password", "-p", help="Password"),
+    credential_id: Optional[str] = typer.Option(None, "--id", help="Credential identifier (e.g., mysql-prod)"),
+    username: Optional[str] = typer.Option(None, "--username", "-u", help="Username"),
+    password: Optional[str] = typer.Option(None, "--password", "-p", help="Password"),
     description: str = typer.Option("", "--description", "-d", help="Optional description"),
+    from_file: Optional[str] = typer.Option(None, "--from-file", "-f", help="Import credentials from JSON file"),
     vault_path: str = typer.Option(".secrets/vault.json.enc", "--vault", help="Path to vault file"),
 ):
     """
     Add or update credential in vault.
     
     Examples:
+        # Single credential
         vya-backupdb vault-add --id mysql-prod --username root --password MyP@ss123
         vya-backupdb vault-add --id smtp-server --username user@domain.com --password xxx --description "SMTP Server"
+        
+        # Multiple credentials from JSON file
+        vya-backupdb vault-add --from-file credentials.json
+    
+    JSON file format:
+        [
+            {
+                "id": "mysql-prod",
+                "username": "root",
+                "password": "MyP@ss123",
+                "description": "Production MySQL"
+            },
+            {
+                "id": "postgresql-prod",
+                "username": "postgres",
+                "password": "SecureP@ss",
+                "description": "Production PostgreSQL"
+            }
+        ]
     """
     from python_backup.security.vault import VaultManager
     
@@ -738,34 +764,106 @@ def vault_add(
     
     try:
         vault = VaultManager(vault_path)
-        
-        # Load existing vault (or create new if doesn't exist)
         vault.load()
         
-        # Check if credential already exists
-        exists = vault.exists(credential_id)
-        action = "Updating" if exists else "Adding"
+        # Import from JSON file
+        if from_file:
+            import_path = Path(from_file)
+            if not import_path.exists():
+                console.print(f"[red]✗ File not found:[/red] {from_file}")
+                raise typer.Exit(code=1)
+            
+            console.print(f"Importing credentials from '[cyan]{from_file}[/cyan]'...\n")
+            
+            try:
+                with open(import_path, 'r') as f:
+                    credentials = json.load(f)
+                
+                if not isinstance(credentials, list):
+                    console.print("[red]✗ JSON file must contain an array of credentials[/red]")
+                    raise typer.Exit(code=1)
+                
+                added_count = 0
+                updated_count = 0
+                failed_count = 0
+                
+                for idx, cred in enumerate(credentials, 1):
+                    # Validate required fields
+                    if not all(k in cred for k in ['id', 'username', 'password']):
+                        console.print(f"[yellow]⚠ Skipping entry {idx}: Missing required fields (id, username, password)[/yellow]")
+                        failed_count += 1
+                        continue
+                    
+                    cred_id = cred['id']
+                    cred_user = cred['username']
+                    cred_pass = cred['password']
+                    cred_desc = cred.get('description', '')
+                    
+                    exists = vault.exists(cred_id)
+                    action = "Updating" if exists else "Adding"
+                    
+                    console.print(f"{action} credential '[cyan]{cred_id}[/cyan]'...")
+                    
+                    if vault.set(cred_id, cred_user, cred_pass, cred_desc):
+                        if exists:
+                            updated_count += 1
+                        else:
+                            added_count += 1
+                    else:
+                        console.print(f"[red]  ✗ Failed to set credential '{cred_id}'[/red]")
+                        failed_count += 1
+                
+                # Save vault
+                if not vault.save():
+                    console.print(f"[red]✗ Failed to save vault[/red]")
+                    raise typer.Exit(code=1)
+                
+                # Summary
+                console.print(f"\n[bold]Import Summary:[/bold]")
+                console.print(f"  [green]Added:[/green] {added_count}")
+                console.print(f"  [blue]Updated:[/blue] {updated_count}")
+                if failed_count > 0:
+                    console.print(f"  [red]Failed:[/red] {failed_count}")
+                console.print(f"  Vault: {vault_path}")
+                
+                if failed_count > 0:
+                    raise typer.Exit(code=1)
+                
+            except json.JSONDecodeError as e:
+                console.print(f"[red]✗ Invalid JSON file:[/red] {e}")
+                raise typer.Exit(code=1)
         
-        console.print(f"{action} credential '[cyan]{credential_id}[/cyan]'...")
-        
-        # Set credential
-        success = vault.set(credential_id, username, password, description)
-        
-        if not success:
-            console.print(f"[red]✗ Failed to set credential[/red]")
-            raise typer.Exit(code=1)
-        
-        # Save vault
-        if not vault.save():
-            console.print(f"[red]✗ Failed to save vault[/red]")
-            raise typer.Exit(code=1)
-        
-        action_past = "Updated" if exists else "Added"
-        console.print(f"[green]✓ {action_past}:[/green] Credential '{credential_id}'")
-        console.print(f"  Username: {username}")
-        if description:
-            console.print(f"  Description: {description}")
-        console.print(f"  Vault: {vault_path}")
+        # Single credential mode
+        else:
+            # Validate required parameters for single mode
+            if not credential_id or not username or not password:
+                console.print("[red]✗ Error:[/red] Either provide --from-file or all of --id, --username, and --password")
+                console.print("\nUsage:")
+                console.print("  Single: vya-backupdb vault-add --id ID --username USER --password PASS")
+                console.print("  Batch:  vya-backupdb vault-add --from-file credentials.json")
+                raise typer.Exit(code=1)
+            
+            exists = vault.exists(credential_id)
+            action = "Updating" if exists else "Adding"
+            
+            console.print(f"{action} credential '[cyan]{credential_id}[/cyan]'...")
+            
+            success = vault.set(credential_id, username, password, description)
+            
+            if not success:
+                console.print(f"[red]✗ Failed to set credential[/red]")
+                raise typer.Exit(code=1)
+            
+            if not vault.save():
+                console.print(f"[red]✗ Failed to save vault[/red]")
+                raise typer.Exit(code=1)
+            
+            action_past = "Updated" if exists else "Added"
+            console.print(f"[green]✓ {action_past}:[/green] Credential '{credential_id}'")
+            console.print(f"  Username: {username}")
+            if description:
+                console.print(f"  Description: {description}")
+            console.print(f"  Vault: {vault_path}")
         
     except Exception as e:
         console.print(f"[red]✗ Error:[/red] {e}")
@@ -841,48 +939,49 @@ def vault_list(
     
     console.print("[bold blue]VYA BackupDB - Vault List Credentials[/bold blue]\n")
     
-    try:
-        vault = VaultManager(vault_path)
-        
-        if not vault.load():
-            console.print(f"[yellow]Vault is empty or doesn't exist[/yellow]")
-            console.print(f"Path: {vault_path}")
-            raise typer.Exit(code=0)
-        
-        # Get all credentials
-        credential_ids = vault.list_credentials()
-        
-        if not credential_ids:
-            console.print("[yellow]No credentials in vault[/yellow]")
-            raise typer.Exit(code=0)
-        
-        # Display as table
-        table = Table(title=f"Vault Credentials ({len(credential_ids)})")
-        table.add_column("ID", style="cyan")
-        table.add_column("Username", style="green")
-        table.add_column("Description")
-        table.add_column("Updated", style="dim")
-        
-        for cred_id in credential_ids:
-            credential = vault.get(cred_id)
-            metadata = vault.get_metadata(cred_id)
-            
-            username = credential['username'] if credential else "???"
-            description = metadata.get('description', '') if metadata else ''
-            updated = metadata.get('updated_at', '')[:19] if metadata else ''  # Trim to datetime
-            
-            table.add_row(cred_id, username, description, updated)
-        
-        console.print(table)
+    vault = VaultManager(vault_path)
+    
+    if not vault.load():
+        console.print("[yellow]No credentials in vault[/yellow]")
         console.print(f"\n[dim]Vault: {vault_path}[/dim]")
+        console.print("[dim]Use 'vault-add' to create your first credential[/dim]")
+        return  # Exit without error
+    
+    # Get all credentials
+    credential_ids = vault.list_credentials()
+    
+    if not credential_ids:
+        console.print("[yellow]No credentials in vault[/yellow]")
+        console.print(f"\n[dim]Vault: {vault_path}[/dim]")
+        console.print("[dim]Use 'vault-add' to create your first credential[/dim]")
+        return  # Exit without error
+    
+    # Sort credentials by ID
+    credential_ids = sorted(credential_ids)
+    
+    # Display as table
+    table = Table(title=f"Vault Credentials ({len(credential_ids)})")
+    table.add_column("ID", style="cyan")
+    table.add_column("Username", style="green")
+    table.add_column("Description")
+    table.add_column("Updated", style="dim")
+    
+    for cred_id in credential_ids:
+        credential = vault.get(cred_id)
+        metadata = vault.get_metadata(cred_id)
         
-        # Show vault info
-        info = vault.get_vault_info()
-        console.print(f"[dim]Size: {info['file_size_bytes'] / 1024:.1f} KB | Version: {info['version']}[/dim]")
+        username = credential['username'] if credential else "???"
+        description = metadata.get('description', '') if metadata else ''
+        updated = metadata.get('updated_at', '')[:19] if metadata else ''  # Trim to datetime
         
-    except Exception as e:
-        console.print(f"[red]✗ Error:[/red] {e}")
-        raise typer.Exit(code=1)
+        table.add_row(cred_id, username, description, updated)
+    
+    console.print(table)
+    console.print(f"\n[dim]Vault: {vault_path}[/dim]")
+    
+    # Show vault info
+    info = vault.get_vault_info()
+    console.print(f"[dim]Size: {info['file_size_bytes'] / 1024:.1f} KB | Version: {info['version']}[/dim]")
 
 
 @app.command("vault-remove")
@@ -986,6 +1085,474 @@ def vault_info(
             console.print(f"  [yellow]⚠ Warning: Permissions should be 600 (owner read/write only)[/yellow]")
         
         console.print("\n[green]✓ Vault is healthy[/green]")
+        
+    except Exception as e:
+        console.print(f"[red]✗ Error:[/red] {e}")
+        raise typer.Exit(code=1)
+
+
+@app.command("config-instance-add")
+def config_instance_add(
+    instance_id: str = typer.Option(..., "--id", help="Instance identifier (e.g., prod-mysql-01)"),
+    db_type: str = typer.Option(..., "--type", help="Database type: mysql, postgresql"),
+    host: str = typer.Option(..., "--host", help="Database host"),
+    port: int = typer.Option(..., "--port", help="Database port"),
+    credential_name: str = typer.Option(..., "--credential", help="Vault credential ID"),
+    enabled: bool = typer.Option(True, "--enabled/--disabled", help="Enable this instance"),
+    databases: Optional[str] = typer.Option(None, "--databases", help="Whitelist: comma-separated database names (empty = all)"),
+    db_ignore: Optional[str] = typer.Option(None, "--db-ignore", help="Blacklist: comma-separated database names to exclude"),
+    ssl_enabled: bool = typer.Option(False, "--ssl/--no-ssl", help="Enable SSL/TLS"),
+    ssl_ca_cert: Optional[str] = typer.Option(None, "--ssl-ca-cert", help="Path to SSL CA certificate"),
+    config_path: str = typer.Option("config/config.yaml", "--config", help="Path to config file"),
+):
+    """
+    Add or update database instance in config file.
+    
+    Examples:
+        # Basic MySQL instance
+        vya-backupdb config-instance-add --id prod-mysql-01 --type mysql --host localhost --port 3306 --credential mysql-prod
+        
+        # PostgreSQL with SSL
+        vya-backupdb config-instance-add --id prod-postgres-01 --type postgresql --host db.example.com --port 5432 --credential postgres-prod --ssl --ssl-ca-cert /etc/ssl/ca.pem
+        
+        # With database filters
+        vya-backupdb config-instance-add --id mysql-app --type mysql --host localhost --port 3306 --credential mysql-prod --databases "app_prod,app_analytics" --db-ignore "test_db,dev_db"
+    """
+    import yaml
+    
+    console.print("[bold blue]VYA BackupDB - Add/Update Config Instance[/bold blue]\n")
+    
+    try:
+        config_file = Path(config_path)
+        
+        # Load existing config or create new
+        if config_file.exists():
+            with open(config_file, 'r') as f:
+                config_data = yaml.safe_load(f) or {}
+        else:
+            config_data = {
+                'application_name': 'vya-backupdb',
+                'version': '2.0.0',
+                'environment': 'production',
+                'databases': [],
+                'storage': {
+                    'base_path': '/var/backups/vya_backupdb',
+                    'structure': '{hostname}/{db_id}/{db_name}/{date}',
+                    'compression_level': 6,
+                    'checksum_algorithm': 'sha256'
+                },
+                'retention': {
+                    'strategy': 'gfs',
+                    'daily_keep': 7,
+                    'weekly_keep': 4,
+                    'monthly_keep': 12,
+                    'cleanup_enabled': True
+                },
+                'logging': {
+                    'level': 'INFO',
+                    'format': 'json',
+                    'output': 'file',
+                    'file_path': '/var/log/vya_backupdb/app.log'
+                }
+            }
+        
+        # Ensure databases key exists
+        if 'databases' not in config_data:
+            config_data['databases'] = []
+        
+        # Parse database filters
+        database_list = []
+        if databases:
+            database_list = [db.strip() for db in databases.split(',') if db.strip()]
+        
+        db_ignore_list = []
+        if db_ignore:
+            db_ignore_list = [db.strip() for db in db_ignore.split(',') if db.strip()]
+        
+        # Create instance config
+        instance = {
+            'id': instance_id,
+            'type': db_type,
+            'host': host,
+            'port': port,
+            'enabled': enabled,
+            'credential_name': credential_name,
+            'database': database_list,
+            'db_ignore': db_ignore_list,
+            'ssl_enabled': ssl_enabled
+        }
+        
+        if ssl_ca_cert:
+            instance['ssl_ca_cert'] = ssl_ca_cert
+        
+        # Check if instance exists
+        existing_index = None
+        for idx, db in enumerate(config_data['databases']):
+            if db.get('id') == instance_id:
+                existing_index = idx
+                break
+        
+        if existing_index is not None:
+            action = "Updated"
+            config_data['databases'][existing_index] = instance
+        else:
+            action = "Added"
+            config_data['databases'].append(instance)
+        
+        # Create directory if needed
+        config_file.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Save config
+        with open(config_file, 'w') as f:
+            yaml.dump(config_data, f, default_flow_style=False, sort_keys=False, indent=2)
+        
+        console.print(f"[green]✓ {action}:[/green] Instance '{instance_id}'")
+        console.print(f"  Type: {db_type}")
+        console.print(f"  Host: {host}:{port}")
+        console.print(f"  Credential: {credential_name}")
+        console.print(f"  Enabled: {enabled}")
+        if database_list:
+            console.print(f"  Databases (whitelist): {', '.join(database_list)}")
+        if db_ignore_list:
+            console.print(f"  DB Ignore (blacklist): {', '.join(db_ignore_list)}")
+        console.print(f"  Config: {config_path}")
+        
+    except Exception as e:
+        console.print(f"[red]✗ Error:[/red] {e}")
+        raise typer.Exit(code=1)
+
+
+@app.command("config-instance-list")
+def config_instance_list(
+    config_path: str = typer.Option("config/config.yaml", "--config", help="Path to config file"),
+    show_disabled: bool = typer.Option(False, "--show-disabled", help="Show disabled instances"),
+):
+    """
+    List database instances in config file.
+    
+    Examples:
+        vya-backupdb config-instance-list
+        vya-backupdb config-instance-list --show-disabled
+    """
+    import yaml
+    
+    console.print("[bold blue]VYA BackupDB - Config Instances[/bold blue]\n")
+    
+    try:
+        config_file = Path(config_path)
+        
+        if not config_file.exists():
+            console.print("[yellow]Config file not found[/yellow]")
+            console.print(f"\n[dim]Config: {config_path}[/dim]")
+            console.print("[dim]Use 'config-instance-add' to create your first instance[/dim]")
+            return
+        
+        with open(config_file, 'r') as f:
+            config_data = yaml.safe_load(f)
+        
+        databases = config_data.get('databases', [])
+        
+        if not databases:
+            console.print("[yellow]No instances in config[/yellow]")
+            console.print(f"\n[dim]Config: {config_path}[/dim]")
+            console.print("[dim]Use 'config-instance-add' to create your first instance[/dim]")
+            return
+        
+        # Filter by enabled status
+        if not show_disabled:
+            databases = [db for db in databases if db.get('enabled', True)]
+        
+        if not databases:
+            console.print("[yellow]No enabled instances[/yellow]")
+            console.print(f"\n[dim]Use '--show-disabled' to see disabled instances[/dim]")
+            return
+        
+        # Display as table
+        table = Table(title=f"Config Instances ({len(databases)})")
+        table.add_column("ID", style="cyan")
+        table.add_column("Type", style="magenta")
+        table.add_column("Host:Port", style="green")
+        table.add_column("Credential", style="yellow")
+        table.add_column("Databases")
+        table.add_column("Status")
+        
+        for db in databases:
+            db_id = db.get('id', '?')
+            db_type = db.get('type', '?')
+            host = db.get('host', '?')
+            port = db.get('port', '?')
+            credential = db.get('credential_name', '?')
+            enabled = db.get('enabled', True)
+            
+            # Database filtering info
+            database_list = db.get('database', [])
+            db_ignore_list = db.get('db_ignore', [])
+            
+            if database_list:
+                db_info = f"✓ {len(database_list)} DBs"
+            elif db_ignore_list:
+                db_info = f"✗ {len(db_ignore_list)} excluded"
+            else:
+                db_info = "All databases"
+            
+            status = "[green]enabled[/green]" if enabled else "[red]disabled[/red]"
+            
+            table.add_row(
+                db_id,
+                db_type,
+                f"{host}:{port}",
+                credential,
+                db_info,
+                status
+            )
+        
+        console.print(table)
+        console.print(f"\n[dim]Config: {config_path}[/dim]")
+        
+    except Exception as e:
+        console.print(f"[red]✗ Error:[/red] {e}")
+        raise typer.Exit(code=1)
+
+
+@app.command("config-instance-get")
+def config_instance_get(
+    instance_id: str = typer.Option(..., "--id", help="Instance identifier"),
+    config_path: str = typer.Option("config/config.yaml", "--config", help="Path to config file"),
+):
+    """
+    Get detailed information about a config instance.
+    
+    Examples:
+        vya-backupdb config-instance-get --id prod-mysql-01
+    """
+    import yaml
+    
+    console.print("[bold blue]VYA BackupDB - Instance Details[/bold blue]\n")
+    
+    try:
+        config_file = Path(config_path)
+        
+        if not config_file.exists():
+            console.print(f"[red]✗ Config file not found:[/red] {config_path}")
+            raise typer.Exit(code=1)
+        
+        with open(config_file, 'r') as f:
+            config_data = yaml.safe_load(f)
+        
+        databases = config_data.get('databases', [])
+        
+        # Find instance
+        instance = None
+        for db in databases:
+            if db.get('id') == instance_id:
+                instance = db
+                break
+        
+        if not instance:
+            console.print(f"[red]✗ Instance not found:[/red] {instance_id}")
+            raise typer.Exit(code=1)
+        
+        # Display details
+        console.print(f"[bold]Instance:[/bold] [cyan]{instance_id}[/cyan]")
+        console.print(f"[bold]Type:[/bold] {instance.get('type', '?')}")
+        console.print(f"[bold]Host:[/bold] {instance.get('host', '?')}")
+        console.print(f"[bold]Port:[/bold] {instance.get('port', '?')}")
+        console.print(f"[bold]Credential:[/bold] {instance.get('credential_name', '?')}")
+        console.print(f"[bold]Enabled:[/bold] {instance.get('enabled', True)}")
+        
+        # Database filtering
+        database_list = instance.get('database', [])
+        db_ignore_list = instance.get('db_ignore', [])
+        
+        if database_list:
+            console.print(f"\n[bold]Databases (Whitelist):[/bold]")
+            for db in database_list:
+                console.print(f"  • {db}")
+        else:
+            console.print(f"\n[bold]Databases:[/bold] All (no whitelist)")
+        
+        if db_ignore_list:
+            console.print(f"\n[bold]DB Ignore (Blacklist):[/bold]")
+            for db in db_ignore_list:
+                console.print(f"  • {db}")
+        
+        # SSL
+        ssl_enabled = instance.get('ssl_enabled', False)
+        console.print(f"\n[bold]SSL:[/bold] {'Enabled' if ssl_enabled else 'Disabled'}")
+        if ssl_enabled and instance.get('ssl_ca_cert'):
+            console.print(f"  CA Cert: {instance.get('ssl_ca_cert')}")
+        
+        console.print(f"\n[dim]Config: {config_path}[/dim]")
+        
+    except Exception as e:
+        console.print(f"[red]✗ Error:[/red] {e}")
+        raise typer.Exit(code=1)
+
+
+@app.command("config-instance-remove")
+def config_instance_remove(
+    instance_id: str = typer.Option(..., "--id", help="Instance identifier"),
+    force: bool = typer.Option(False, "--force", help="Skip confirmation"),
+    config_path: str = typer.Option("config/config.yaml", "--config", help="Path to config file"),
+):
+    """
+    Remove instance from config file.
+    
+    Examples:
+        vya-backupdb config-instance-remove --id old-mysql
+        vya-backupdb config-instance-remove --id old-mysql --force
+    """
+    import yaml
+    
+    console.print("[bold blue]VYA BackupDB - Remove Instance[/bold blue]\n")
+    
+    try:
+        config_file = Path(config_path)
+        
+        if not config_file.exists():
+            console.print(f"[red]✗ Config file not found:[/red] {config_path}")
+            raise typer.Exit(code=1)
+        
+        with open(config_file, 'r') as f:
+            config_data = yaml.safe_load(f)
+        
+        databases = config_data.get('databases', [])
+        
+        # Find instance
+        found = False
+        for idx, db in enumerate(databases):
+            if db.get('id') == instance_id:
+                found = True
+                instance = db
+                
+                # Confirm deletion
+                if not force:
+                    console.print(f"Instance: [cyan]{instance_id}[/cyan]")
+                    console.print(f"Type: {instance.get('type', '?')}")
+                    console.print(f"Host: {instance.get('host', '?')}:{instance.get('port', '?')}")
+                    
+                    confirm = typer.confirm("\nAre you sure you want to remove this instance?")
+                    if not confirm:
+                        console.print("[yellow]Cancelled[/yellow]")
+                        raise typer.Exit(code=0)
+                
+                # Remove instance
+                databases.pop(idx)
+                config_data['databases'] = databases
+                
+                # Save config
+                with open(config_file, 'w') as f:
+                    yaml.dump(config_data, f, default_flow_style=False, sort_keys=False, indent=2)
+                
+                console.print(f"[green]✓ Removed:[/green] Instance '{instance_id}'")
+                console.print(f"  Config: {config_path}")
+                break
+        
+        if not found:
+            console.print(f"[red]✗ Instance not found:[/red] {instance_id}")
+            raise typer.Exit(code=1)
+        
+    except Exception as e:
+        console.print(f"[red]✗ Error:[/red] {e}")
+        raise typer.Exit(code=1)
+
+
+@app.command("config-instance-enable")
+def config_instance_enable(
+    instance_id: str = typer.Option(..., "--id", help="Instance identifier"),
+    config_path: str = typer.Option("config/config.yaml", "--config", help="Path to config file"),
+):
+    """
+    Enable a database instance.
+    
+    Examples:
+        vya-backupdb config-instance-enable --id prod-mysql-01
+    """
+    import yaml
+    
+    console.print("[bold blue]VYA BackupDB - Enable Instance[/bold blue]\n")
+    
+    try:
+        config_file = Path(config_path)
+        
+        if not config_file.exists():
+            console.print(f"[red]✗ Config file not found:[/red] {config_path}")
+            raise typer.Exit(code=1)
+        
+        with open(config_file, 'r') as f:
+            config_data = yaml.safe_load(f)
+        
+        databases = config_data.get('databases', [])
+        
+        # Find and update instance
+        found = False
+        for db in databases:
+            if db.get('id') == instance_id:
+                found = True
+                db['enabled'] = True
+                
+                # Save config
+                with open(config_file, 'w') as f:
+                    yaml.dump(config_data, f, default_flow_style=False, sort_keys=False, indent=2)
+                
+                console.print(f"[green]✓ Enabled:[/green] Instance '{instance_id}'")
+                console.print(f"  Config: {config_path}")
+                break
+        
+        if not found:
+            console.print(f"[red]✗ Instance not found:[/red] {instance_id}")
+            raise typer.Exit(code=1)
+        
+    except Exception as e:
+        console.print(f"[red]✗ Error:[/red] {e}")
+        raise typer.Exit(code=1)
+
+
+@app.command("config-instance-disable")
+def config_instance_disable(
+    instance_id: str = typer.Option(..., "--id", help="Instance identifier"),
+    config_path: str = typer.Option("config/config.yaml", "--config", help="Path to config file"),
+):
+    """
+    Disable a database instance.
+    
+    Examples:
+        vya-backupdb config-instance-disable --id old-mysql
+    """
+    import yaml
+    
+    console.print("[bold blue]VYA BackupDB - Disable Instance[/bold blue]\n")
+    
+    try:
+        config_file = Path(config_path)
+        
+        if not config_file.exists():
+            console.print(f"[red]✗ Config file not found:[/red] {config_path}")
+            raise typer.Exit(code=1)
+        
+        with open(config_file, 'r') as f:
+            config_data = yaml.safe_load(f)
+        
+        databases = config_data.get('databases', [])
+        
+        # Find and update instance
+        found = False
+        for db in databases:
+            if db.get('id') == instance_id:
+                found = True
+                db['enabled'] = False
+                
+                # Save config
+                with open(config_file, 'w') as f:
+                    yaml.dump(config_data, f, default_flow_style=False, sort_keys=False, indent=2)
+                
+                console.print(f"[green]✓ Disabled:[/green] Instance '{instance_id}'")
+                console.print(f"  Config: {config_path}")
+                break
+        
+        if not found:
+            console.print(f"[red]✗ Instance not found:[/red] {instance_id}")
+            raise typer.Exit(code=1)
         
     except Exception as e:
         console.print(f"[red]✗ Error:[/red] {e}")
