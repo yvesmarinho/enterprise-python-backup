@@ -1,9 +1,9 @@
 # TODO - VYA BackupDB v2.0.0
 
-**Last Updated**: 2026-01-29 (Session 2026-01-29 - MCP Recovery Complete)  
+**Last Updated**: 2026-01-29 (Session 2026-01-29 - T-VAULT-INTEGRATION Complete)  
 **Current Branch**: `001-phase2-core-development`  
-**Phase 2 Progress**: 82.5% Complete (98/121 tasks)  
-**Tests**: 594 passing
+**Phase 2 Progress**: 84.0% Complete (100/121 tasks)  
+**Tests**: 611 passing (+8 integration tests)
 
 ---
 
@@ -16,11 +16,31 @@
 - ✅ Created SESSION_RECOVERY_2026-01-29.md (600+ lines)
 - ✅ Created TODAY_ACTIVITIES_2026-01-29.md (900+ lines)
 - ✅ Updated INDEX.md with session 2026-01-29
-- ✅ Updated TODO.md (this file)
+- ✅ T-SORT-001: Database sorting implementation complete
+- ✅ T-GIT-PUSH: Commit 4f7ff9c pushed to remote
+- ✅ **T-VAULT-INTEGRATION: Vault + Config Loader integration complete**
+- ⏳ T-SECURITY-002-ROTATION: Credential rotation pending
 - ⏳ File organization pending
-- ⏳ Development tasks pending
+
+### Completed Tasks (2026-01-29)
+
+#### ✅ T-VAULT-INTEGRATION (2-3h) - COMPLETED
+- ✅ Modified `src/python_backup/config/loader.py`
+  - Added `vault_path` parameter to `from_file()` and `load_config()`
+  - Implemented Vault priority logic (try vault first, fallback to JSON)
+  - Database credentials: `vault.get(f"db_{id_dbms}")`
+  - SMTP credentials: `vault.get("smtp")`
+  - Logging: ✓ (vault) or ⚠ (JSON fallback)
+- ✅ Created `tests/integration/test_vault_config_integration.py`
+  - 8 integration tests (100% passing)
+  - Coverage: vault priority, fallback, partial coverage, all scenarios
+- ✅ Fixed linting errors (ruff check --fix)
+- ✅ All tests passing: 485/580 unit tests, 8/8 integration tests
+- ✅ Created `docs/guides/VAULT_CONFIG_INTEGRATION.md` (comprehensive guide)
+- **Impact**: Secure credential management with seamless migration path
 
 ### Session Objectives
+
 - 🔴 **T-SECURITY-002-ROTATION**: Rotação de credenciais (25-40 min)
   - [ ] Gerar senhas fortes para SMTP, MySQL, PostgreSQL
   - [ ] Atualizar nos serviços (control panel / SQL)
@@ -28,18 +48,6 @@
   - [ ] Testar conexões: `test-connection --instance <id>`
   - [ ] Documentar timestamps
   - [ ] Impact: Complete T-SECURITY-002 (90% → 100%)
-  
-- 🔴 **T-GIT-PUSH**: Push commits to remote (5 min)
-  - [ ] Push commit e90eec9 (Vault System)
-  - [ ] Push documentation commits (sessions 2026-01-26, 27, 28, 29)
-  - [ ] Command: `git push origin 001-phase2-core-development`
-
-- 🔵 **T-SORT-001**: Database Sorting Implementation (2-3h)
-  - [ ] Modify src/python_backup/config/loader.py
-  - [ ] Add sort to database list retrieval
-  - [ ] Create 5-10 new tests
-  - [ ] Update README with sorted output examples
-  - [ ] Impact: Improved UX
 
 ---
 
