@@ -31,9 +31,9 @@ class TestDatabaseConfig:
         assert config.id == "test-mysql"
         assert config.type == "mysql"
         assert config.enabled is True
-        # Should auto-add MySQL system databases
-        assert "mysql" in config.exclude_databases
-        assert "information_schema" in config.exclude_databases
+        # Should auto-add MySQL system databases to db_ignore
+        assert "mysql" in config.db_ignore
+        assert "information_schema" in config.db_ignore
 
     def test_valid_postgresql_config(self) -> None:
         """Test valid PostgreSQL configuration"""
@@ -46,9 +46,9 @@ class TestDatabaseConfig:
             password="testpass",
         )
         assert config.type == "postgresql"
-        # Should auto-add PostgreSQL system databases
-        assert "postgres" in config.exclude_databases
-        assert "template0" in config.exclude_databases
+        # Should auto-add PostgreSQL system databases to db_ignore
+        assert "postgres" in config.db_ignore
+        assert "template0" in config.db_ignore
 
     def test_invalid_port(self) -> None:
         """Test invalid port number"""
@@ -71,11 +71,11 @@ class TestDatabaseConfig:
             port=3306,
             username="testuser",
             password="testpass",
-            exclude_databases=["custom_db"],
+            db_ignore=["custom_db"],
         )
-        # Should have both custom and system databases
-        assert "custom_db" in config.exclude_databases
-        assert "mysql" in config.exclude_databases
+        # Should have both custom and system databases in db_ignore
+        assert "custom_db" in config.db_ignore
+        assert "mysql" in config.db_ignore
 
 
 class TestStorageConfig:

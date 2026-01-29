@@ -1,9 +1,100 @@
 # TODO - VYA BackupDB v2.0.0
 
-**Last Updated**: 2026-01-26 (Session End - 17:15 BRT)  
+**Last Updated**: 2026-01-29 (Session 2026-01-29 - MCP Recovery Complete)  
 **Current Branch**: `001-phase2-core-development`  
 **Phase 2 Progress**: 82.5% Complete (98/121 tasks)  
-**Tests**: 560 passing
+**Tests**: 594 passing
+
+---
+
+## 🎯 Session 2026-01-29 - In Progress 🔄
+
+### Session Status
+- ✅ MCP memory initialized and updated
+- ✅ Session recovery from previous sessions complete
+- ✅ Created docs/sessions/2026-01-29/ directory structure
+- ✅ Created SESSION_RECOVERY_2026-01-29.md (600+ lines)
+- ✅ Created TODAY_ACTIVITIES_2026-01-29.md (900+ lines)
+- ✅ Updated INDEX.md with session 2026-01-29
+- ✅ Updated TODO.md (this file)
+- ⏳ File organization pending
+- ⏳ Development tasks pending
+
+### Session Objectives
+- 🔴 **T-SECURITY-002-ROTATION**: Rotação de credenciais (25-40 min)
+  - [ ] Gerar senhas fortes para SMTP, MySQL, PostgreSQL
+  - [ ] Atualizar nos serviços (control panel / SQL)
+  - [ ] Atualizar no vault: `vault-add --id <service> --password <new>`
+  - [ ] Testar conexões: `test-connection --instance <id>`
+  - [ ] Documentar timestamps
+  - [ ] Impact: Complete T-SECURITY-002 (90% → 100%)
+  
+- 🔴 **T-GIT-PUSH**: Push commits to remote (5 min)
+  - [ ] Push commit e90eec9 (Vault System)
+  - [ ] Push documentation commits (sessions 2026-01-26, 27, 28, 29)
+  - [ ] Command: `git push origin 001-phase2-core-development`
+
+- 🔵 **T-SORT-001**: Database Sorting Implementation (2-3h)
+  - [ ] Modify src/python_backup/config/loader.py
+  - [ ] Add sort to database list retrieval
+  - [ ] Create 5-10 new tests
+  - [ ] Update README with sorted output examples
+  - [ ] Impact: Improved UX
+
+---
+
+## 🎯 Session 2026-01-28 - Paused ⏸️
+
+### Session Objectives
+- 🔴 **T-SECURITY-002-ROTATION**: Rotação de credenciais (25-40 min)
+  - [ ] Gerar senhas fortes para SMTP, MySQL, PostgreSQL
+  - [ ] Atualizar nos serviços (control panel / SQL)
+  - [ ] Atualizar no vault: `vault-add --id <service> --password <new>`
+  - [ ] Testar conexões: `test-connection --instance <id>`
+  - [ ] Documentar timestamps
+  - [ ] Impact: Complete T-SECURITY-002 (90% → 100%)
+  
+- 🔴 **T-GIT-PUSH**: Push commits to remote (5 min)
+  - [ ] Push commit e90eec9 (Vault System)
+  - [ ] Push documentation commits
+  - [ ] Command: `git push origin 001-phase2-core-development`
+
+- 🟡 **T-SORT-001**: Database Sorting Implementation (2-3h)
+  - [ ] Modify src/python_backup/config/loader.py
+  - [ ] Add sort to database list retrieval
+  - [ ] Create 5-10 new tests
+  - [ ] Update README with sorted output examples
+  - [ ] Impact: Improved UX
+
+### Session Status
+- ✅ MCP memory initialized
+- ✅ Session recovery from 2026-01-27 complete
+- ✅ Created docs/sessions/2026-01-28/ directory structure
+- ✅ Created SESSION_RECOVERY_2026-01-28.md
+- ✅ Created TODAY_ACTIVITIES_2026-01-28.md
+- ✅ Project organization complete (moved files to docs/security/, docs/workspace-templates/)
+- ✅ Updated INDEX.md
+- ✅ Updated TODO.md (this file)
+
+---
+
+## 🎯 Session 2026-01-27 - Complete ✅
+
+### Session Objectives
+- ✅ **Unit Tests Config-Instance Commands** (100% Completo)
+  - 34 tests implemented (100% passing)
+  - tests/unit/test_config_instance_commands.py (769 lines)
+  - Coverage: All 6 commands tested
+  - Integration tests: 2 (full lifecycle)
+  - Total tests: 594 passing (+34 new)
+
+### Session Closure ✅
+- ✅ Complete documentation (SESSION_RECOVERY, SESSION_REPORT, TODAY_ACTIVITIES)
+- ✅ Update INDEX.md (marked session complete)
+- ✅ Update TODO.md
+- ✅ MCP memory updated
+- ⏳ Git commit documentation (pending)
+- ⏳ Git push to remote (pending)
 
 ---
 

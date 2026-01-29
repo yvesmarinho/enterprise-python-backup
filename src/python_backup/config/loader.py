@@ -22,8 +22,8 @@ class DatabaseConfig:
     port: int
     user: str
     secret: str  # password
-    db_ignore: List[str]
-    db_list: List[str]  # Specific databases to backup (empty = all)
+    db_ignore: List[str]  # Databases to exclude
+    database: List[str]  # Databases to include (empty = all) - renamed from db_list
     enabled: bool
     
     @classmethod
@@ -32,18 +32,28 @@ class DatabaseConfig:
         logger.debug(f"=== Função: from_dict (DatabaseConfig) ===")
         logger.debug(f"==> PARAM: data TYPE: {type(data)}, CONTENT: {safe_repr(data)}")
         
-        # Parse db_ignore string to list
+        # Parse db_ignore (support both string and list)
         db_ignore = []
         if 'db_ignore' in data and data['db_ignore']:
-            db_ignore = [db.strip() for db in data['db_ignore'].split(',')]
+            if isinstance(data['db_ignore'], list):
+                db_ignore = data['db_ignore']
+            elif isinstance(data['db_ignore'], str):
+                db_ignore = [db.strip() for db in data['db_ignore'].split(',')]
         
-        # Parse db_list (can be string or list)
-        db_list = []
-        if 'db_list' in data:
+        # Parse database/db_list (backward compatibility)
+        # Priority: 'database' > 'db_list'
+        database = []
+        if 'database' in data:
+            if isinstance(data['database'], list):
+                database = data['database']
+            elif isinstance(data['database'], str) and data['database']:
+                database = [db.strip() for db in data['database'].split(',')]
+        elif 'db_list' in data:
+            # Backward compatibility with old field name
             if isinstance(data['db_list'], list):
-                db_list = data['db_list']
+                database = data['db_list']
             elif isinstance(data['db_list'], str) and data['db_list']:
-                db_list = [db.strip() for db in data['db_list'].split(',')]
+                database = [db.strip() for db in data['db_list'].split(',')]
         
         # Validate dbms type
         valid_dbms = ['mysql', 'postgresql', 'files']
@@ -58,7 +68,7 @@ class DatabaseConfig:
             user=data['user'],
             secret=data['secret'],
             db_ignore=db_ignore,
-            db_list=db_list,
+            database=database,
             enabled=data.get('enabled', True)
         )
         logger.debug(f"=== Término Função: from_dict (DatabaseConfig) ===")
@@ -200,11 +210,28 @@ class VyaBackupConfig:
         )
         logger.debug(f"=== Término Função: from_file (VyaBackupConfig) ===")
     
-    def get_enabled_databases(self) -> List[DatabaseConfig]:
-        """Get list of enabled database configurations."""
+    def get_enabled_databases(self, sort: bool = True) -> List[DatabaseConfig]:
+        """
+        Get list of enabled database configurations.
+        
+        Args:
+            sort: If True, sort databases alphabetically by host then by dbms (default: True)
+        
+        Returns:
+            List of enabled DatabaseConfig objects, optionally sorted
+        """
         logger.debug(f"=== Função: get_enabled_databases ===")
+        logger.debug(f"==> PARAM: sort TYPE: {type(sort)}, CONTENT: {sort}")
+        
         result = [db for db in self.db_config if db.enabled]
-        logger.debug(f"==> RESULT: {len(result)} enabled databases")
+        
+        if sort:
+            # Sort alphabetically by host (case-insensitive), then by dbms type
+            result = sorted(result, key=lambda db: (db.host.lower(), db.dbms.lower()))
+            logger.debug(f"==> RESULT: {len(result)} enabled databases (sorted)")
+        else:
+            logger.debug(f"==> RESULT: {len(result)} enabled databases (unsorted)")
+        
         logger.debug(f"=== Término Função: get_enabled_databases ===")
         return result
     

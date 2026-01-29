@@ -37,7 +37,7 @@ def get_connection_string(config: DatabaseConfig) -> str:
         )
         
         # Add SSL parameter if enabled
-        if config.ssl:
+        if config.ssl_enabled:
             conn_str += "?ssl=true"
             
         return conn_str
@@ -50,7 +50,7 @@ def get_connection_string(config: DatabaseConfig) -> str:
         )
         
         # Add SSL mode if enabled
-        if config.ssl:
+        if config.ssl_enabled:
             conn_str += "?sslmode=require"
             
         return conn_str

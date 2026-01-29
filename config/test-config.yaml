@@ -1,0 +1,44 @@
+application_name: vya-backupdb
+version: 2.0.0
+environment: production
+databases:
+- id: test-mysql-01
+  type: mysql
+  host: localhost
+  port: 3306
+  enabled: true
+  credential_name: mysql-prod
+  database: []
+  db_ignore:
+  - information_schema
+  - mysql
+  - sys
+  - performance_schema
+  ssl_enabled: false
+- id: test-postgres-01
+  type: postgresql
+  host: localhost
+  port: 5432
+  enabled: false
+  credential_name: postgresql-prod
+  database:
+  - app_production
+  - app_analytics
+  db_ignore: []
+  ssl_enabled: true
+storage:
+  base_path: /var/backups/vya_backupdb
+  structure: '{hostname}/{db_id}/{db_name}/{date}'
+  compression_level: 6
+  checksum_algorithm: sha256
+retention:
+  strategy: gfs
+  daily_keep: 7
+  weekly_keep: 4
+  monthly_keep: 12
+  cleanup_enabled: true
+logging:
+  level: INFO
+  format: json
+  output: file
+  file_path: /var/log/vya_backupdb/app.log

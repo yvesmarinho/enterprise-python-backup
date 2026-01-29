@@ -78,6 +78,8 @@ gAAAAABl8rNwq5F...encrypted_binary_data...X2Pz==  # binário criptografado
 
 ### 1. Adicionar/Atualizar Credencial
 
+#### Modo Individual
+
 ```bash
 # Adicionar nova credencial
 vya-backupdb vault-add \
@@ -100,6 +102,45 @@ vya-backupdb vault-add \
   Description: Production MySQL Server
   Vault: .secrets/vault.json.enc
 ```
+
+#### Modo Lote (Batch Import)
+
+```bash
+# Importar múltiplas credenciais de um arquivo JSON
+vya-backupdb vault-add --from-file credentials.json
+```
+
+**Formato do JSON:**
+```json
+[
+  {
+    "id": "mysql-prod",
+    "username": "root",
+    "password": "SecureP@ss123",
+    "description": "Production MySQL"
+  },
+  {
+    "id": "postgresql-prod",
+    "username": "postgres",
+    "password": "PostgresP@ss456"
+  }
+]
+```
+
+**Saída:**
+```
+Importing credentials from 'credentials.json'...
+
+Adding credential 'mysql-prod'...
+Adding credential 'postgresql-prod'...
+
+Import Summary:
+  Added: 2
+  Updated: 0
+  Vault: .secrets/vault.json.enc
+```
+
+**Documentação Completa:** [VAULT_BATCH_IMPORT_GUIDE.md](VAULT_BATCH_IMPORT_GUIDE.md)
 
 ### 2. Recuperar Credencial
 

@@ -131,7 +131,7 @@ class MySQLAdapter(DatabaseAdapter):
         ]
         
         # Add SSL if enabled
-        if self.config.ssl:
+        if self.config.ssl_enabled:
             cmd_parts.append("--ssl-mode=REQUIRED")
         
         # Add database name

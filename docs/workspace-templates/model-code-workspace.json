@@ -1,0 +1,609 @@
+{
+    "folders": [
+      {
+        "name": "Enterprise Database Migration",
+        "path": "."
+      }
+    ],
+    "settings": {
+      "files.associations": {
+        "*.yaml": "yaml",
+        "*.yml": "yaml",
+        "mcp.json": "jsonc",
+        "objetivo.yaml": "yaml",
+        "mcp-questions.yaml": "yaml",
+        "*config*.json": "jsonc",
+        "*_config.json": "jsonc",
+        "*template*.json": "jsonc",
+        "Dockerfile": "dockerfile",
+        "Dockerfile.*": "dockerfile",
+        "docker-compose.yml": "dockercompose",
+        "docker-compose.*.yml": "dockercompose",
+        "Makefile": "makefile",
+        "makefile": "makefile",
+        "GNUmakefile": "makefile",
+        "*.lock": "json",
+        "uv.lock": "toml",
+        "pyproject.toml": "toml",
+        "requirements*.txt": "pip-requirements",
+        ".env*": "properties",
+        ".envrc": "shellscript",
+        "activate-mcp.sh": "shellscript",
+        "*.migration.py": "python",
+        "*.migration.sql": "sql",
+        "*.test.py": "python",
+        ".python-version": "properties"
+      },
+      "yaml.schemas": {
+        "objetivo": "objetivo.yaml",
+        "mcp-questions": "mcp-questions.yaml"
+      },
+      "files.exclude": {
+        "**/__pycache__": true,
+        "**/*.pyc": true,
+        "**/*.pyo": true,
+        "**/.pytest_cache": true,
+        "**/logs/*.log": true,
+        "**/reports/*.json": true,
+        "**/reports/*.csv": true,
+        "**/reports/*.html": true,
+        "**/backups/**": true,
+        "**/.mcp-status": true,
+        "**/venv": true,
+        "**/.venv": true,
+        "**/.env": true,
+        "**/node_modules": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/*.egg-info": true,
+        "**/dist": true,
+        "**/build": true,
+        "**/.coverage": true,
+        "**/htmlcov": true,
+        "**/.mypy_cache": true,
+        "**/.ruff_cache": true,
+        "**/uv.lock": false
+      },
+      "search.exclude": {
+        "**/node_modules": true,
+        "**/.git": true,
+        "**/secrets": true,
+        "**/__pycache__": true,
+        "**/logs": true,
+        "**/reports": true,
+        "**/backups": true,
+        "**/venv": true,
+        "**/.venv": true,
+        "**/dist": true,
+        "**/build": true,
+        "**/*.egg-info": true,
+        "**/.pytest_cache": true,
+        "**/.mypy_cache": true,
+        "**/.ruff_cache": true,
+        "**/htmlcov": true,
+        "**/.coverage": true,
+        "**/legacy/**": false
+      },
+      "editor.rulers": [
+        80,
+        120
+      ],
+      "editor.tabSize": 4,
+      "editor.insertSpaces": true,
+      "files.trimTrailingWhitespace": true,
+      "files.insertFinalNewline": true,
+      "editor.formatOnSave": true,
+      "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+      },
+      "aiAssistant.projectContext": ".vscode/mcp.json",
+      "aiAssistant.followProjectConventions": true,
+      "[python]": {
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": "explicit"
+        }
+      },
+      "[yaml]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true
+      },
+      "[json]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true
+      },
+      "[jsonc]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true
+      },
+      "[markdown]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "editor.wordWrap": "on"
+      },
+      "[dockerfile]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true
+      },
+      "[makefile]": {
+        "editor.tabSize": 4,
+        "editor.insertSpaces": false
+      },
+      "python.terminal.activateEnvironment": true,
+      "python.testing.pytestEnabled": true,
+      "python.testing.pytestArgs": [
+        "test/",
+        "-v"
+      ],
+      "python.linting.enabled": true,
+      "python.linting.pylintEnabled": true,
+      "python.linting.flake8Enabled": true,
+      "python.analysis.typeCheckingMode": "basic",
+      "python.analysis.autoImportCompletions": true,
+      "python.analysis.autoSearchPaths": true,
+      "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/node_modules/**": true,
+        "**/venv/**": true,
+        "**/.venv/**": true,
+        "**/logs/**": true,
+        "**/reports/**": true,
+        "**/backups/**": true
+      },
+      "emmet.includeLanguages": {
+        "jinja2": "html"
+      },
+      "terminal.integrated.env.linux": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "MIGRATION_LOG_LEVEL": "DEBUG"
+      },
+      "terminal.integrated.env.osx": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "MIGRATION_LOG_LEVEL": "DEBUG"
+      },
+      "terminal.integrated.env.windows": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "MIGRATION_LOG_LEVEL": "DEBUG"
+      },
+      "workbench.colorCustomizations": {
+        "titleBar.activeBackground": "#2E7D32",
+        "titleBar.activeForeground": "#FFFFFF",
+        "titleBar.inactiveBackground": "#388E3C",
+        "titleBar.inactiveForeground": "#CCCCCC",
+        "statusBar.background": "#2E7D32",
+        "statusBar.foreground": "#FFFFFF"
+      },
+      "workbench.colorTheme": "Default Dark+",
+      "git.ignoreLimitWarning": true,
+      "explorer.fileNesting.enabled": false,
+      "breadcrumbs.enabled": true,
+      "breadcrumbs.filePath": "on",
+      "breadcrumbs.symbolPath": "on",
+      "explorer.sortOrder": "type",
+      "explorer.compactFolders": false,
+      "explorer.decorations.colors": true,
+      "explorer.decorations.badges": true,
+      "workbench.tree.indent": 8,
+      "workbench.tree.renderIndentGuides": "onHover",
+      "workbench.editor.enablePreview": true,
+      "workbench.editor.revealIfOpen": true,
+      "files.defaultLanguage": "python",
+      "explorer.autoReveal": "focusNoScroll",
+      "*.yaml": "yaml",
+      "*.yml": "yaml",
+      "mcp.json": "jsonc",
+      "objetivo.yaml": "yaml",
+      "mcp-questions.yaml": "yaml",
+      "*config*.json": "jsonc",
+      "*_config.json": "jsonc",
+      "*template*.json": "jsonc",
+      "Dockerfile": "dockerfile",
+      "Dockerfile.*": "dockerfile",
+      "docker-compose.yml": "dockercompose",
+      "docker-compose.*.yml": "dockercompose",
+      "Makefile": "makefile",
+      "makefile": "makefile",
+      "GNUmakefile": "makefile",
+      "*.lock": "json",
+      "uv.lock": "toml",
+      "pyproject.toml": "toml",
+      "requirements*.txt": "pip-requirements",
+      ".env*": "properties",
+      ".envrc": "shellscript",
+      "activate-mcp.sh": "shellscript",
+      "*.migration.py": "python",
+      "*.migration.sql": "sql",
+      "*.test.py": "python",
+      ".python-version": "properties"
+    },
+    "tasks": {
+      "version": "2.0.0",
+      "tasks": [
+        {
+          "label": "Migration: Setup Project",
+          "type": "shell",
+          "command": "make",
+          "args": [
+            "setup"
+          ],
+          "group": "build",
+          "presentation": {
+            "echo": true,
+            "reveal": "always",
+            "focus": false,
+            "panel": "shared",
+            "showReuseMessage": true,
+            "clear": false
+          },
+          "detail": "Setup completo do projeto de migração"
+        },
+        {
+          "label": "Migration: Activate MCP",
+          "type": "shell",
+          "command": "./activate-mcp.sh",
+          "group": "build",
+          "presentation": {
+            "echo": true,
+            "reveal": "always",
+            "focus": false,
+            "panel": "shared"
+          },
+          "detail": "Ativa o contexto MCP do projeto de migração"
+        },
+        {
+          "label": "Migration: Run Interactive",
+          "type": "shell",
+          "command": "make",
+          "args": [
+            "migrate-interactive"
+          ],
+          "group": "build",
+          "presentation": {
+            "echo": true,
+            "reveal": "always",
+            "focus": true,
+            "panel": "shared"
+          },
+          "detail": "Executa migração em modo interativo"
+        },
+        {
+          "label": "Migration: Run Auto",
+          "type": "shell",
+          "command": "make",
+          "args": [
+            "migrate-auto"
+          ],
+          "group": "build",
+          "presentation": {
+            "echo": true,
+            "reveal": "always",
+            "focus": true,
+            "panel": "shared"
+          },
+          "detail": "Executa migração em modo automático"
+        },
+        {
+          "label": "Migration: Validate",
+          "type": "shell",
+          "command": "make",
+          "args": [
+            "validate"
+          ],
+          "group": "test",
+          "presentation": {
+            "echo": true,
+            "reveal": "always",
+            "focus": false,
+            "panel": "shared"
+          },
+          "detail": "Valida integridade dos dados migrados"
+        },
+        {
+          "label": "Migration: Test All",
+          "type": "shell",
+          "command": "make",
+          "args": [
+            "test"
+          ],
+          "group": "test",
+          "presentation": {
+            "echo": true,
+            "reveal": "always",
+            "focus": false,
+            "panel": "shared"
+          },
+          "detail": "Executa todos os testes"
+        },
+        {
+          "label": "Migration: Generate Reports",
+          "type": "shell",
+          "command": "make",
+          "args": [
+            "reports"
+          ],
+          "group": "build",
+          "presentation": {
+            "echo": true,
+            "reveal": "always",
+            "focus": false,
+            "panel": "shared"
+          },
+          "detail": "Gera relatórios de migração"
+        },
+        {
+          "label": "Migration: Check Status",
+          "type": "shell",
+          "command": "make",
+          "args": [
+            "status"
+          ],
+          "group": "test",
+          "presentation": {
+            "echo": true,
+            "reveal": "always",
+            "focus": false,
+            "panel": "shared"
+          },
+          "detail": "Verifica status da migração"
+        },
+        {
+          "label": "Migration: Monitor",
+          "type": "shell",
+          "command": "make",
+          "args": [
+            "monitor"
+          ],
+          "group": "build",
+          "presentation": {
+            "echo": true,
+            "reveal": "always",
+            "focus": true,
+            "panel": "shared"
+          },
+          "detail": "Inicia monitor em tempo real"
+        },
+        {
+          "label": "Migration: View Logs",
+          "type": "shell",
+          "command": "make",
+          "args": [
+            "logs"
+          ],
+          "group": "test",
+          "presentation": {
+            "echo": true,
+            "reveal": "always",
+            "focus": false,
+            "panel": "shared"
+          },
+          "detail": "Visualiza logs de migração"
+        },
+        {
+          "label": "Migration: Docker Up",
+          "type": "shell",
+          "command": "docker-compose",
+          "args": [
+            "up",
+            "-d"
+          ],
+          "group": "build",
+          "presentation": {
+            "echo": true,
+            "reveal": "always",
+            "focus": false,
+            "panel": "shared"
+          },
+          "detail": "Inicia ambiente Docker completo"
+        },
+        {
+          "label": "Migration: Docker Down",
+          "type": "shell",
+          "command": "docker-compose",
+          "args": [
+            "down"
+          ],
+          "group": "build",
+          "presentation": {
+            "echo": true,
+            "reveal": "always",
+            "focus": false,
+            "panel": "shared"
+          },
+          "detail": "Para ambiente Docker"
+        },
+        {
+          "label": "Migration: Format Code",
+          "type": "shell",
+          "command": "make",
+          "args": [
+            "format"
+          ],
+          "group": "build",
+          "presentation": {
+            "echo": true,
+            "reveal": "always",
+            "focus": false,
+            "panel": "shared"
+          },
+          "detail": "Formata código Python"
+        },
+        {
+          "label": "Migration: Lint Code",
+          "type": "shell",
+          "command": "make",
+          "args": [
+            "lint"
+          ],
+          "group": "test",
+          "presentation": {
+            "echo": true,
+            "reveal": "always",
+            "focus": false,
+            "panel": "shared"
+          },
+          "detail": "Verifica qualidade do código"
+        },
+        {
+          "label": "Migration: Clean",
+          "type": "shell",
+          "command": "make",
+          "args": [
+            "clean"
+          ],
+          "group": "build",
+          "presentation": {
+            "echo": true,
+            "reveal": "always",
+            "focus": false,
+            "panel": "shared"
+          },
+          "detail": "Limpeza do projeto"
+        }
+      ]
+    },
+    "launch": {
+      "version": "0.2.0",
+      "configurations": [
+        {
+          "name": "Migration: Debug Interactive",
+          "type": "python",
+          "request": "launch",
+          "program": "${workspaceFolder}/run_migration.py",
+          "console": "integratedTerminal",
+          "cwd": "${workspaceFolder}",
+          "env": {
+            "MIGRATION_LOG_LEVEL": "DEBUG",
+            "PYTHONPATH": "${workspaceFolder}"
+          },
+          "args": [],
+          "justMyCode": false
+        },
+        {
+          "name": "Migration: Debug Auto",
+          "type": "python",
+          "request": "launch",
+          "program": "${workspaceFolder}/run_migration.py",
+          "console": "integratedTerminal",
+          "cwd": "${workspaceFolder}",
+          "env": {
+            "MIGRATION_LOG_LEVEL": "DEBUG",
+            "PYTHONPATH": "${workspaceFolder}"
+          },
+          "args": [
+            "--auto",
+            "--verbose"
+          ],
+          "justMyCode": false
+        },
+        {
+          "name": "Migration: Debug Orchestrator",
+          "type": "python",
+          "request": "launch",
+          "program": "${workspaceFolder}/core/orchestrator_pure_python.py",
+          "console": "integratedTerminal",
+          "cwd": "${workspaceFolder}",
+          "env": {
+            "MIGRATION_LOG_LEVEL": "DEBUG",
+            "PYTHONPATH": "${workspaceFolder}"
+          },
+          "args": [
+            "--auto"
+          ],
+          "justMyCode": false
+        },
+        {
+          "name": "Migration: Debug Validator",
+          "type": "python",
+          "request": "launch",
+          "program": "${workspaceFolder}/core/validator.py",
+          "console": "integratedTerminal",
+          "cwd": "${workspaceFolder}",
+          "env": {
+            "MIGRATION_LOG_LEVEL": "DEBUG",
+            "PYTHONPATH": "${workspaceFolder}"
+          },
+          "args": [
+            "--validate-all"
+          ],
+          "justMyCode": false
+        },
+        {
+          "name": "Migration: Debug Cleanup",
+          "type": "python",
+          "request": "launch",
+          "program": "${workspaceFolder}/cleanup/cleanup_database.py",
+          "console": "integratedTerminal",
+          "cwd": "${workspaceFolder}",
+          "env": {
+            "MIGRATION_LOG_LEVEL": "DEBUG",
+            "PYTHONPATH": "${workspaceFolder}"
+          },
+          "args": [],
+          "justMyCode": false
+        },
+        {
+          "name": "Migration: Test Current File",
+          "type": "python",
+          "request": "launch",
+          "module": "pytest",
+          "args": [
+            "${file}",
+            "-v",
+            "-s"
+          ],
+          "console": "integratedTerminal",
+          "cwd": "${workspaceFolder}",
+          "env": {
+            "MIGRATION_LOG_LEVEL": "DEBUG",
+            "PYTHONPATH": "${workspaceFolder}"
+          },
+          "justMyCode": false
+        }
+      ]
+    },
+    "extensions": {
+      "recommendations": [
+        "ms-python.python",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "ms-python.pylint",
+        "ms-python.flake8",
+        "redhat.vscode-yaml",
+        "ms-vscode.makefile-tools",
+        "ms-azuretools.vscode-docker",
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode",
+        "github.copilot",
+        "github.copilot-chat",
+        "ms-vscode.test-adapter-converter",
+        "littlefoxteam.vscode-python-test-adapter",
+        "ms-python.debugpy",
+        "charliermarsh.ruff",
+        "ms-toolsai.jupyter",
+        "ms-toolsai.vscode-jupyter-cell-tags",
+        "ms-toolsai.vscode-jupyter-slideshow",
+        "ms-vscode.vscode-json",
+        "streetsidesoftware.code-spell-checker",
+        "gruntfuggly.todo-tree",
+        "ms-vscode.vscode-typescript-next",
+        "visualstudioexptteam.vscodeintellicode",
+        "ms-vscode.hexeditor",
+        "eamodio.gitlens",
+        "donjayamanne.githistory",
+        "GitHub.vscode-pull-request-github"
+      ]
+    },
+    "compounds": [
+      {
+        "name": "Migration: Full Stack Debug",
+        "configurations": [
+          "Migration: Debug Interactive",
+          "Migration: Debug Orchestrator"
+        ]
+      }
+    ]
+  }
+  

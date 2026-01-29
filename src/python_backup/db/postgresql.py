@@ -137,7 +137,7 @@ class PostgreSQLAdapter(DatabaseAdapter):
             cmd_parts.append("--format=plain")  # Plain SQL format
         
         # Add SSL if enabled
-        if self.config.ssl:
+        if self.config.ssl_enabled:
             cmd_parts.append("--set=sslmode=require")
         
         # Add database name

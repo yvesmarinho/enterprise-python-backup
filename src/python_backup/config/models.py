@@ -16,25 +16,27 @@ class DatabaseConfig(BaseModel):
     port: int = Field(ge=0, le=65535, description="Database port (0 for files)")
     username: Optional[str] = Field(None, description="Database username")
     password: Optional[str] = Field(None, description="Database password")
-    database: Optional[str] = Field(None, description="Default database")
-    credential_name: Optional[str] = Field(None, description="Credential name for encrypted credentials")
-    enabled: bool = Field(default=True, description="Enable backup for this DB")
-    exclude_databases: list[str] = Field(
+    database: Optional[str] = Field(None, description="Default database for connection")
+    databases: list[str] = Field(
+        default_factory=list, description="Databases to include in backup (empty = all)"
+    )
+    db_ignore: list[str] = Field(
         default_factory=list, description="Databases to exclude from backup"
     )
-    ssl: bool = Field(default=False, description="Enable SSL/TLS (simplified)")
+    credential_name: Optional[str] = Field(None, description="Credential name for encrypted credentials")
+    enabled: bool = Field(default=True, description="Enable backup for this DB")
     ssl_enabled: bool = Field(default=False, description="Enable SSL/TLS")
     ssl_ca_cert: Optional[Path] = Field(None, description="SSL CA certificate path")
 
     @model_validator(mode="after")
     def add_system_databases(self) -> "DatabaseConfig":
-        """Add default system databases if not present"""
+        """Add default system databases to db_ignore if not present"""
         defaults = {
             "mysql": ["information_schema", "performance_schema", "mysql", "sys"],
             "postgresql": ["postgres", "template0", "template1"],
         }
         system_dbs = defaults.get(self.type, [])
-        self.exclude_databases = list(set(self.exclude_databases + system_dbs))
+        self.db_ignore = list(set(self.db_ignore + system_dbs))
         return self
 
 
