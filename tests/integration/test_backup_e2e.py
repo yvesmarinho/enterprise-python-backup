@@ -35,7 +35,7 @@ def temp_storage_dir():
 class TestBackupE2EPostgreSQL:
     """End-to-end tests for PostgreSQL backups."""
 
-    @patch('vya_backupbd.backup.strategy.get_database_adapter')
+    @patch('python_backup.backup.strategy.get_database_adapter')
     def test_full_backup_postgresql_to_local_storage(
         self, mock_get_adapter, temp_backup_dir, temp_storage_dir
     ):
@@ -83,7 +83,7 @@ class TestBackupE2EPostgreSQL:
         assert context.start_time is not None
         assert context.end_time is not None
 
-    @patch('vya_backupbd.db.postgresql.subprocess.run')
+    @patch('python_backup.db.postgresql.subprocess.run')
     def test_full_backup_postgresql_with_compression(
         self, mock_run, temp_backup_dir, temp_storage_dir
     ):
@@ -120,7 +120,7 @@ class TestBackupE2EPostgreSQL:
 
         executor = BackupExecutor()
         
-        with patch('vya_backupbd.backup.strategy.tempfile.mkdtemp', return_value=str(temp_backup_dir)):
+        with patch('python_backup.backup.strategy.tempfile.mkdtemp', return_value=str(temp_backup_dir)):
             result = executor.execute(context)
 
         assert result is True
@@ -131,7 +131,7 @@ class TestBackupE2EPostgreSQL:
 class TestBackupE2EMySQL:
     """End-to-end tests for MySQL backups."""
 
-    @patch('vya_backupbd.db.mysql.subprocess.run')
+    @patch('python_backup.db.mysql.subprocess.run')
     def test_full_backup_mysql_to_local_storage(
         self, mock_run, temp_backup_dir, temp_storage_dir
     ):
@@ -165,13 +165,13 @@ class TestBackupE2EMySQL:
 
         executor = BackupExecutor()
         
-        with patch('vya_backupbd.backup.strategy.tempfile.mkdtemp', return_value=str(temp_backup_dir)):
+        with patch('python_backup.backup.strategy.tempfile.mkdtemp', return_value=str(temp_backup_dir)):
             result = executor.execute(context)
 
         assert result is True
         assert context.status == "completed"
 
-    @patch('vya_backupbd.db.mysql.subprocess.run')
+    @patch('python_backup.db.mysql.subprocess.run')
     def test_full_backup_mysql_with_bzip2_compression(
         self, mock_run, temp_backup_dir, temp_storage_dir
     ):
@@ -208,7 +208,7 @@ class TestBackupE2EMySQL:
 
         executor = BackupExecutor()
         
-        with patch('vya_backupbd.backup.strategy.tempfile.mkdtemp', return_value=str(temp_backup_dir)):
+        with patch('python_backup.backup.strategy.tempfile.mkdtemp', return_value=str(temp_backup_dir)):
             result = executor.execute(context)
 
         assert result is True
@@ -218,7 +218,7 @@ class TestBackupE2EMySQL:
 class TestBackupE2ES3Storage:
     """End-to-end tests for S3 storage."""
 
-    @patch('vya_backupbd.db.postgresql.subprocess.run')
+    @patch('python_backup.db.postgresql.subprocess.run')
     @patch('boto3.client')
     def test_full_backup_to_s3_storage(
         self, mock_boto_client, mock_run, temp_backup_dir
@@ -262,7 +262,7 @@ class TestBackupE2ES3Storage:
 
         executor = BackupExecutor()
         
-        with patch('vya_backupbd.backup.strategy.tempfile.mkdtemp', return_value=str(temp_backup_dir)):
+        with patch('python_backup.backup.strategy.tempfile.mkdtemp', return_value=str(temp_backup_dir)):
             result = executor.execute(context)
 
         assert result is True
@@ -273,7 +273,7 @@ class TestBackupE2ES3Storage:
 class TestBackupE2EErrorHandling:
     """End-to-end tests for error handling."""
 
-    @patch('vya_backupbd.db.postgresql.subprocess.run')
+    @patch('python_backup.db.postgresql.subprocess.run')
     def test_backup_fails_when_database_dump_fails(
         self, mock_run, temp_storage_dir
     ):
@@ -308,7 +308,7 @@ class TestBackupE2EErrorHandling:
         assert context.status == "failed"
         assert context.error_message is not None
 
-    @patch('vya_backupbd.db.postgresql.subprocess.run')
+    @patch('python_backup.db.postgresql.subprocess.run')
     def test_backup_retry_on_transient_failure(
         self, mock_run, temp_backup_dir, temp_storage_dir
     ):
@@ -345,7 +345,7 @@ class TestBackupE2EErrorHandling:
 
         executor = BackupExecutor(max_retries=2)
         
-        with patch('vya_backupbd.backup.strategy.tempfile.mkdtemp', return_value=str(temp_backup_dir)):
+        with patch('python_backup.backup.strategy.tempfile.mkdtemp', return_value=str(temp_backup_dir)):
             result = executor.execute(context)
 
         assert result is True
@@ -356,7 +356,7 @@ class TestBackupE2EErrorHandling:
 class TestBackupE2EProgressTracking:
     """End-to-end tests for progress tracking."""
 
-    @patch('vya_backupbd.db.postgresql.subprocess.run')
+    @patch('python_backup.db.postgresql.subprocess.run')
     def test_backup_reports_progress(
         self, mock_run, temp_backup_dir, temp_storage_dir
     ):
@@ -396,7 +396,7 @@ class TestBackupE2EProgressTracking:
 
         executor = BackupExecutor(progress_callback=progress_callback)
         
-        with patch('vya_backupbd.backup.strategy.tempfile.mkdtemp', return_value=str(temp_backup_dir)):
+        with patch('python_backup.backup.strategy.tempfile.mkdtemp', return_value=str(temp_backup_dir)):
             executor.execute(context)
 
         # Verify progress was reported
@@ -408,8 +408,8 @@ class TestBackupE2EProgressTracking:
 class TestBackupE2ECredentials:
     """End-to-end tests with encrypted credentials."""
 
-    @patch('vya_backupbd.db.postgresql.subprocess.run')
-    @patch('vya_backupbd.security.credentials.CredentialManager')
+    @patch('python_backup.db.postgresql.subprocess.run')
+    @patch('python_backup.security.credentials.CredentialManager')
     def test_backup_with_encrypted_credentials(
         self, mock_cred_manager, mock_run, temp_backup_dir, temp_storage_dir
     ):
@@ -450,7 +450,7 @@ class TestBackupE2ECredentials:
 
         executor = BackupExecutor()
         
-        with patch('vya_backupbd.backup.strategy.tempfile.mkdtemp', return_value=str(temp_backup_dir)):
+        with patch('python_backup.backup.strategy.tempfile.mkdtemp', return_value=str(temp_backup_dir)):
             result = executor.execute(context)
 
         assert result is True

@@ -39,7 +39,7 @@ class TestMySQLAdapterInitialization:
 class TestMySQLGetDatabases:
     """Test MySQL database listing."""
 
-    @patch('vya_backupbd.db.mysql.MySQLAdapter._execute_query')
+    @patch('python_backup.db.mysql.MySQLAdapter._execute_query')
     def test_get_databases_returns_list(self, mock_execute, sample_mysql_config):
         """Test getting list of databases."""
         mock_execute.return_value = [
@@ -61,7 +61,7 @@ class TestMySQLGetDatabases:
         assert "information_schema" not in databases
         assert "mysql" not in databases
 
-    @patch('vya_backupbd.db.mysql.MySQLAdapter._execute_query')
+    @patch('python_backup.db.mysql.MySQLAdapter._execute_query')
     def test_get_databases_excludes_system_dbs(self, mock_execute, sample_mysql_config):
         """Test that system databases are excluded."""
         mock_execute.return_value = [
@@ -78,7 +78,7 @@ class TestMySQLGetDatabases:
         assert len(databases) == 1
         assert databases[0] == "userdb"
 
-    @patch('vya_backupbd.db.mysql.MySQLAdapter._execute_query')
+    @patch('python_backup.db.mysql.MySQLAdapter._execute_query')
     def test_get_databases_empty_result(self, mock_execute, sample_mysql_config):
         """Test handling of empty database list."""
         mock_execute.return_value = [
@@ -91,7 +91,7 @@ class TestMySQLGetDatabases:
         
         assert databases == []
 
-    @patch('vya_backupbd.db.mysql.MySQLAdapter._execute_query')
+    @patch('python_backup.db.mysql.MySQLAdapter._execute_query')
     def test_get_databases_connection_error(self, mock_execute, sample_mysql_config):
         """Test handling of connection errors."""
         mock_execute.side_effect = Exception("Connection failed")
@@ -105,7 +105,7 @@ class TestMySQLGetDatabases:
 class TestMySQLTestConnection:
     """Test MySQL connection testing."""
 
-    @patch('vya_backupbd.db.mysql.MySQLAdapter._execute_query')
+    @patch('python_backup.db.mysql.MySQLAdapter._execute_query')
     def test_connection_success(self, mock_execute, sample_mysql_config):
         """Test successful connection test."""
         mock_execute.return_value = [(1,)]
@@ -120,7 +120,7 @@ class TestMySQLTestConnection:
         assert hasattr(call_args, '__class__')
         assert 'TextClause' in str(call_args.__class__)
 
-    @patch('vya_backupbd.db.mysql.MySQLAdapter._execute_query')
+    @patch('python_backup.db.mysql.MySQLAdapter._execute_query')
     def test_connection_failure(self, mock_execute, sample_mysql_config):
         """Test connection failure handling."""
         mock_execute.side_effect = Exception("Access denied")
@@ -130,7 +130,7 @@ class TestMySQLTestConnection:
         
         assert result is False
 
-    @patch('vya_backupbd.db.mysql.MySQLAdapter._execute_query')
+    @patch('python_backup.db.mysql.MySQLAdapter._execute_query')
     def test_connection_timeout(self, mock_execute, sample_mysql_config):
         """Test connection timeout handling."""
         mock_execute.side_effect = TimeoutError("Connection timeout")
@@ -165,19 +165,33 @@ class TestMySQLGetBackupCommand:
         
         assert "--password=" in command or "-p" in command
 
-    def test_backup_command_with_ssl(self, sample_mysql_config):
+    def test_backup_command_with_ssl(self):
         """Test backup command with SSL enabled."""
-        sample_mysql_config.ssl = True
-        adapter = MySQLAdapter(sample_mysql_config)
+        config = DatabaseConfig(
+            type="mysql",
+            host="localhost",
+            port=3306,
+            username="testuser",
+            password="testpass",
+            ssl_enabled=True
+        )
+        adapter = MySQLAdapter(config)
         
         command = adapter.get_backup_command("testdb", "/tmp/backup.sql")
         
         assert "--ssl" in command or "--ssl-mode=REQUIRED" in command
 
-    def test_backup_command_without_ssl(self, sample_mysql_config):
+    def test_backup_command_without_ssl(self):
         """Test backup command without SSL."""
-        sample_mysql_config.ssl = False
-        adapter = MySQLAdapter(sample_mysql_config)
+        config = DatabaseConfig(
+            type="mysql",
+            host="localhost",
+            port=3306,
+            username="testuser",
+            password="testpass",
+            ssl_enabled=False
+        )
+        adapter = MySQLAdapter(config)
         
         command = adapter.get_backup_command("testdb", "/tmp/backup.sql")
         
@@ -295,14 +309,14 @@ class TestMySQLSystemDatabases:
         """Test that MySQL system databases are defined."""
         adapter = MySQLAdapter(sample_mysql_config)
         
-        system_dbs = adapter.config.exclude_databases
+        system_dbs = adapter.config.db_ignore
         
         assert "mysql" in system_dbs
         assert "information_schema" in system_dbs
         assert "performance_schema" in system_dbs
         assert "sys" in system_dbs
 
-    @patch('vya_backupbd.db.mysql.MySQLAdapter._execute_query')
+    @patch('python_backup.db.mysql.MySQLAdapter._execute_query')
     def test_system_databases_filtered_in_get_databases(self, mock_execute, sample_mysql_config):
         """Test that get_databases filters system databases."""
         mock_execute.return_value = [

@@ -41,7 +41,7 @@ try:
         POSTGRESQL_USER = os.getenv('TEST_PG_USER', 'postgres')
         POSTGRESQL_PASSWORD = os.getenv('TEST_PG_PASSWORD', 'W123Mudar')
 except Exception as e:
-    print(f"Warning: Could not load vya_backupbd.json, using defaults: {e}")
+    print(f"Warning: Could not load python_backup.json, using defaults: {e}")
     # Fallback to environment variables or defaults
     MYSQL_HOST = os.getenv('TEST_MYSQL_HOST', '192.168.15.197')
     MYSQL_PORT = int(os.getenv('TEST_MYSQL_PORT', '3306'))

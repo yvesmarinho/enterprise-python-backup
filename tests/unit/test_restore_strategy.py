@@ -49,8 +49,8 @@ class TestFullRestoreStrategy:
         strategy = FullRestoreStrategy()
         assert strategy.get_name() == "full"
 
-    @patch('vya_backupbd.restore.strategy.get_database_adapter')
-    @patch('vya_backupbd.restore.strategy.get_storage_adapter')
+    @patch('python_backup.restore.strategy.get_database_adapter')
+    @patch('python_backup.restore.strategy.get_storage_adapter')
     def test_execute_full_restore_success(self, mock_get_storage, mock_get_adapter):
         """Test executing a successful full restore."""
         # Setup mocks
@@ -82,7 +82,7 @@ class TestFullRestoreStrategy:
         assert result is True
         assert context.status == "completed"
 
-    @patch('vya_backupbd.restore.strategy.get_storage_adapter')
+    @patch('python_backup.restore.strategy.get_storage_adapter')
     def test_execute_restore_download_failure(self, mock_get_storage):
         """Test handling download failure."""
         storage = MagicMock()
@@ -98,8 +98,8 @@ class TestFullRestoreStrategy:
         assert context.status == "failed"
         assert "download" in context.error_message.lower()
 
-    @patch('vya_backupbd.restore.strategy.get_database_adapter')
-    @patch('vya_backupbd.restore.strategy.get_storage_adapter')
+    @patch('python_backup.restore.strategy.get_database_adapter')
+    @patch('python_backup.restore.strategy.get_storage_adapter')
     def test_execute_restore_database_failure(self, mock_get_storage, mock_get_adapter):
         """Test handling database restore failure."""
         storage = MagicMock()
@@ -125,9 +125,9 @@ class TestFullRestoreStrategy:
         assert context.status == "failed"
         assert "restore" in context.error_message.lower()
 
-    @patch('vya_backupbd.restore.strategy.get_database_adapter')
-    @patch('vya_backupbd.restore.strategy.get_storage_adapter')
-    @patch('vya_backupbd.restore.strategy.decompress_file')
+    @patch('python_backup.restore.strategy.get_database_adapter')
+    @patch('python_backup.restore.strategy.get_storage_adapter')
+    @patch('python_backup.restore.strategy.decompress_file')
     def test_execute_with_decompression(self, mock_decompress, mock_get_storage, mock_get_adapter):
         """Test restore with compressed backup."""
         # Setup storage mock
@@ -164,8 +164,8 @@ class TestFullRestoreStrategy:
         mock_decompress.assert_called_once()
         assert context.decompressed_file is not None
 
-    @patch('vya_backupbd.restore.strategy.get_database_adapter')
-    @patch('vya_backupbd.restore.strategy.get_storage_adapter')
+    @patch('python_backup.restore.strategy.get_database_adapter')
+    @patch('python_backup.restore.strategy.get_storage_adapter')
     def test_execute_with_target_database(self, mock_get_storage, mock_get_adapter):
         """Test restore to specific target database."""
         storage = MagicMock()
@@ -257,7 +257,7 @@ class TestRestoreStrategyFactory:
 class TestRestoreStrategyEdgeCases:
     """Test edge cases and error handling."""
 
-    @patch('vya_backupbd.restore.strategy.get_storage_adapter')
+    @patch('python_backup.restore.strategy.get_storage_adapter')
     def test_execute_with_exception_in_download(self, mock_get_storage):
         """Test handling exception during download."""
         storage = MagicMock()
@@ -273,8 +273,8 @@ class TestRestoreStrategyEdgeCases:
         assert context.status == "failed"
         assert context.error_message is not None
 
-    @patch('vya_backupbd.restore.strategy.get_database_adapter')
-    @patch('vya_backupbd.restore.strategy.get_storage_adapter')
+    @patch('python_backup.restore.strategy.get_database_adapter')
+    @patch('python_backup.restore.strategy.get_storage_adapter')
     def test_execute_with_exception_in_restore(self, mock_get_storage, mock_get_adapter):
         """Test handling exception during database restore."""
         storage = MagicMock()
@@ -298,9 +298,9 @@ class TestRestoreStrategyEdgeCases:
         assert result is False
         assert context.status == "failed"
 
-    @patch('vya_backupbd.restore.strategy.get_database_adapter')
-    @patch('vya_backupbd.restore.strategy.get_storage_adapter')
-    @patch('vya_backupbd.restore.strategy.decompress_file')
+    @patch('python_backup.restore.strategy.get_database_adapter')
+    @patch('python_backup.restore.strategy.get_storage_adapter')
+    @patch('python_backup.restore.strategy.decompress_file')
     def test_execute_decompression_failure_stops_restore(self, mock_decompress, mock_get_storage, mock_get_adapter):
         """Test that decompression failure stops restore."""
         storage = MagicMock()

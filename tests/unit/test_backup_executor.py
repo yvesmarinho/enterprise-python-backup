@@ -37,7 +37,7 @@ class TestBackupExecutorCreation:
 class TestBackupExecutorExecution:
     """Test BackupExecutor backup execution."""
 
-    @patch('vya_backupbd.backup.executor.BackupStrategyFactory')
+    @patch('python_backup.backup.executor.BackupStrategyFactory')
     def test_execute_backup_success(self, mock_factory):
         """Test successful backup execution."""
         # Setup strategy mock
@@ -54,7 +54,7 @@ class TestBackupExecutorExecution:
         assert context.status == "completed"
         strategy.execute.assert_called_once_with(context)
 
-    @patch('vya_backupbd.backup.executor.BackupStrategyFactory')
+    @patch('python_backup.backup.executor.BackupStrategyFactory')
     def test_execute_backup_failure(self, mock_factory):
         """Test backup execution failure."""
         strategy = MagicMock()
@@ -69,7 +69,7 @@ class TestBackupExecutorExecution:
         assert result is False
         assert context.status == "failed"
 
-    @patch('vya_backupbd.backup.executor.BackupStrategyFactory')
+    @patch('python_backup.backup.executor.BackupStrategyFactory')
     def test_execute_sets_context_times(self, mock_factory):
         """Test that execution sets start and end times."""
         strategy = MagicMock()
@@ -85,7 +85,7 @@ class TestBackupExecutorExecution:
         assert context.end_time is not None
         assert context.get_duration() is not None
 
-    @patch('vya_backupbd.backup.executor.BackupStrategyFactory')
+    @patch('python_backup.backup.executor.BackupStrategyFactory')
     def test_execute_with_progress_callback(self, mock_factory):
         """Test that progress callbacks are called."""
         strategy = MagicMock()
@@ -109,7 +109,7 @@ class TestBackupExecutorExecution:
         assert has_started
         assert has_completed
 
-    @patch('vya_backupbd.backup.executor.BackupStrategyFactory')
+    @patch('python_backup.backup.executor.BackupStrategyFactory')
     def test_execute_with_exception_handling(self, mock_factory):
         """Test that exceptions are caught and handled."""
         strategy = MagicMock()
@@ -125,7 +125,7 @@ class TestBackupExecutorExecution:
         assert context.status == "failed"
         assert context.error_message is not None
 
-    @patch('vya_backupbd.backup.executor.BackupStrategyFactory')
+    @patch('python_backup.backup.executor.BackupStrategyFactory')
     def test_execute_uses_specified_strategy(self, mock_factory):
         """Test that executor uses the specified strategy."""
         strategy = MagicMock()
@@ -248,7 +248,7 @@ class TestBackupExecutorValidation:
 class TestBackupExecutorRetry:
     """Test BackupExecutor retry logic."""
 
-    @patch('vya_backupbd.backup.executor.BackupStrategyFactory')
+    @patch('python_backup.backup.executor.BackupStrategyFactory')
     def test_execute_with_retry_success_first_attempt(self, mock_factory):
         """Test retry logic when first attempt succeeds."""
         strategy = MagicMock()
@@ -263,7 +263,7 @@ class TestBackupExecutorRetry:
         assert result is True
         assert strategy.execute.call_count == 1  # Only called once
 
-    @patch('vya_backupbd.backup.executor.BackupStrategyFactory')
+    @patch('python_backup.backup.executor.BackupStrategyFactory')
     def test_execute_with_retry_success_second_attempt(self, mock_factory):
         """Test retry logic succeeds on second attempt."""
         strategy = MagicMock()
@@ -278,7 +278,7 @@ class TestBackupExecutorRetry:
         assert result is True
         assert strategy.execute.call_count == 2
 
-    @patch('vya_backupbd.backup.executor.BackupStrategyFactory')
+    @patch('python_backup.backup.executor.BackupStrategyFactory')
     def test_execute_with_retry_all_attempts_fail(self, mock_factory):
         """Test retry logic when all attempts fail."""
         strategy = MagicMock()
@@ -293,7 +293,7 @@ class TestBackupExecutorRetry:
         assert result is False
         assert strategy.execute.call_count == 3  # Retried 3 times
 
-    @patch('vya_backupbd.backup.executor.BackupStrategyFactory')
+    @patch('python_backup.backup.executor.BackupStrategyFactory')
     @patch('time.sleep')
     def test_execute_retry_delays(self, mock_sleep, mock_factory):
         """Test that retry includes delay between attempts."""
@@ -310,7 +310,7 @@ class TestBackupExecutorRetry:
         assert mock_sleep.call_count == 2
         mock_sleep.assert_called_with(1.0)
 
-    @patch('vya_backupbd.backup.executor.BackupStrategyFactory')
+    @patch('python_backup.backup.executor.BackupStrategyFactory')
     def test_execute_no_retry_when_disabled(self, mock_factory):
         """Test that retry can be disabled."""
         strategy = MagicMock()
@@ -346,7 +346,7 @@ class TestBackupExecutorRetry:
 class TestBackupExecutorCleanup:
     """Test BackupExecutor cleanup after backup."""
 
-    @patch('vya_backupbd.backup.executor.BackupStrategyFactory')
+    @patch('python_backup.backup.executor.BackupStrategyFactory')
     @patch('pathlib.Path.unlink')
     def test_cleanup_temp_files_on_success(self, mock_unlink, mock_factory):
         """Test that temporary files are cleaned up after success."""
@@ -363,7 +363,7 @@ class TestBackupExecutorCleanup:
         # Temp file should be deleted after upload
         mock_unlink.assert_called_once()
 
-    @patch('vya_backupbd.backup.executor.BackupStrategyFactory')
+    @patch('python_backup.backup.executor.BackupStrategyFactory')
     @patch('pathlib.Path.unlink')
     def test_cleanup_temp_files_on_failure(self, mock_unlink, mock_factory):
         """Test that temporary files are cleaned up even on failure."""
@@ -380,7 +380,7 @@ class TestBackupExecutorCleanup:
         # Temp file should be deleted even on failure
         mock_unlink.assert_called_once()
 
-    @patch('vya_backupbd.backup.executor.BackupStrategyFactory')
+    @patch('python_backup.backup.executor.BackupStrategyFactory')
     @patch('pathlib.Path.unlink')
     def test_no_cleanup_when_disabled(self, mock_unlink, mock_factory):
         """Test that cleanup can be disabled."""

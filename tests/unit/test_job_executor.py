@@ -84,7 +84,7 @@ class TestJobExecutorCreation:
         
         assert executor is not None
 
-    @patch('vya_backupbd.schedule.executor.ScheduleManager')
+    @patch('python_backup.schedule.executor.ScheduleManager')
     def test_executor_with_schedule_manager(self, mock_manager_class):
         """Test executor with injected schedule manager."""
         mock_manager = MagicMock()
@@ -125,7 +125,7 @@ class TestJobExecutorExecution:
             database_id="db1"
         )
 
-    @patch('vya_backupbd.schedule.executor.BackupExecutor')
+    @patch('python_backup.schedule.executor.BackupExecutor')
     def test_execute_job_success(self, mock_backup_executor_class, executor, schedule):
         """Test successful job execution."""
         # Setup mock backup executor
@@ -147,7 +147,7 @@ class TestJobExecutorExecution:
         assert result is True
         mock_executor.execute.assert_called_once()
 
-    @patch('vya_backupbd.schedule.executor.BackupExecutor')
+    @patch('python_backup.schedule.executor.BackupExecutor')
     def test_execute_job_failure(self, mock_backup_executor_class, executor, schedule):
         """Test failed job execution."""
         mock_executor = MagicMock()
@@ -174,7 +174,7 @@ class TestJobExecutorExecution:
         
         assert result is False
 
-    @patch('vya_backupbd.schedule.executor.BackupExecutor')
+    @patch('python_backup.schedule.executor.BackupExecutor')
     def test_execute_job_with_compression(self, mock_backup_executor_class, executor):
         """Test job execution with compression."""
         schedule = ScheduleConfig(
@@ -200,7 +200,7 @@ class TestJobExecutorExecution:
         
         assert result is True
 
-    @patch('vya_backupbd.schedule.executor.BackupExecutor')
+    @patch('python_backup.schedule.executor.BackupExecutor')
     def test_execute_job_with_custom_retention(self, mock_backup_executor_class, executor):
         """Test job execution with custom retention."""
         schedule = ScheduleConfig(
@@ -244,7 +244,7 @@ class TestJobExecutorCallbacks:
             database_id="db1"
         )
 
-    @patch('vya_backupbd.schedule.executor.BackupExecutor')
+    @patch('python_backup.schedule.executor.BackupExecutor')
     def test_on_job_start_callback(self, mock_backup_executor_class, executor, schedule):
         """Test job start callback is called."""
         mock_executor = MagicMock()
@@ -266,7 +266,7 @@ class TestJobExecutorCallbacks:
         
         on_start.assert_called_once_with(schedule)
 
-    @patch('vya_backupbd.schedule.executor.BackupExecutor')
+    @patch('python_backup.schedule.executor.BackupExecutor')
     def test_on_job_success_callback(self, mock_backup_executor_class, executor, schedule):
         """Test job success callback is called."""
         mock_executor = MagicMock()
@@ -288,7 +288,7 @@ class TestJobExecutorCallbacks:
         
         on_success.assert_called_once()
 
-    @patch('vya_backupbd.schedule.executor.BackupExecutor')
+    @patch('python_backup.schedule.executor.BackupExecutor')
     def test_on_job_failure_callback(self, mock_backup_executor_class, executor, schedule):
         """Test job failure callback is called."""
         mock_executor = MagicMock()
@@ -319,7 +319,7 @@ class TestJobExecutorBatchExecution:
         """Create executor for testing."""
         return JobExecutor()
 
-    @patch('vya_backupbd.schedule.executor.BackupExecutor')
+    @patch('python_backup.schedule.executor.BackupExecutor')
     def test_execute_multiple_jobs(self, mock_backup_executor_class, executor):
         """Test executing multiple jobs in batch."""
         mock_executor = MagicMock()
@@ -344,7 +344,7 @@ class TestJobExecutorBatchExecution:
         assert len(results) == 2
         assert all(results.values())
 
-    @patch('vya_backupbd.schedule.executor.BackupExecutor')
+    @patch('python_backup.schedule.executor.BackupExecutor')
     def test_execute_jobs_with_failures(self, mock_backup_executor_class, executor):
         """Test executing jobs with some failures."""
         mock_executor = MagicMock()

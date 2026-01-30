@@ -52,8 +52,8 @@ class TestFullBackupStrategy:
         strategy = FullBackupStrategy()
         assert strategy.get_name() == "full"
 
-    @patch('vya_backupbd.backup.strategy.get_database_adapter')
-    @patch('vya_backupbd.backup.strategy.get_storage_adapter')
+    @patch('python_backup.backup.strategy.get_database_adapter')
+    @patch('python_backup.backup.strategy.get_storage_adapter')
     def test_execute_full_backup_success(self, mock_get_storage, mock_get_adapter):
         """Test executing a successful full backup."""
         # Setup mocks
@@ -84,7 +84,7 @@ class TestFullBackupStrategy:
         assert context.status == "completed"
         assert context.backup_size > 0
 
-    @patch('vya_backupbd.backup.strategy.get_database_adapter')
+    @patch('python_backup.backup.strategy.get_database_adapter')
     def test_execute_full_backup_dump_failure(self, mock_get_adapter):
         """Test handling database dump failure."""
         # Setup mock to fail
@@ -101,8 +101,8 @@ class TestFullBackupStrategy:
         assert context.status == "failed"
         assert "dump" in context.error_message.lower()
 
-    @patch('vya_backupbd.backup.strategy.get_database_adapter')
-    @patch('vya_backupbd.backup.strategy.get_storage_adapter')
+    @patch('python_backup.backup.strategy.get_database_adapter')
+    @patch('python_backup.backup.strategy.get_storage_adapter')
     def test_execute_full_backup_upload_failure(self, mock_get_storage, mock_get_adapter):
         """Test handling storage upload failure."""
         # Setup mocks
@@ -130,9 +130,9 @@ class TestFullBackupStrategy:
         assert context.status == "failed"
         assert "upload" in context.error_message.lower()
 
-    @patch('vya_backupbd.backup.strategy.get_database_adapter')
-    @patch('vya_backupbd.backup.strategy.get_storage_adapter')
-    @patch('vya_backupbd.backup.strategy.compress_file')
+    @patch('python_backup.backup.strategy.get_database_adapter')
+    @patch('python_backup.backup.strategy.get_storage_adapter')
+    @patch('python_backup.backup.strategy.compress_file')
     def test_execute_with_compression(self, mock_compress, mock_get_storage, mock_get_adapter):
         """Test backup execution with compression enabled."""
         # Setup mocks
@@ -173,8 +173,8 @@ class TestFullBackupStrategy:
         assert context.compressed_size == 1024 * 1024 * 10
         assert context.get_compression_ratio() == 5.0  # 50/10
 
-    @patch('vya_backupbd.backup.strategy.get_database_adapter')
-    @patch('vya_backupbd.backup.strategy.get_storage_adapter')
+    @patch('python_backup.backup.strategy.get_database_adapter')
+    @patch('python_backup.backup.strategy.get_storage_adapter')
     def test_execute_generates_backup_filename(self, mock_get_storage, mock_get_adapter):
         """Test that backup generates proper filename."""
         # Setup mocks
@@ -196,7 +196,7 @@ class TestFullBackupStrategy:
         context = self._create_context()
         strategy = FullBackupStrategy()
 
-        with patch('vya_backupbd.backup.strategy.datetime') as mock_datetime:
+        with patch('python_backup.backup.strategy.datetime') as mock_datetime:
             mock_datetime.now.return_value = datetime(2026, 1, 12, 14, 30, 45)
             result = strategy.execute(context)
 
@@ -207,8 +207,8 @@ class TestFullBackupStrategy:
         assert "20260112" in filename
         assert filename.endswith(".sql")
 
-    @patch('vya_backupbd.backup.strategy.get_database_adapter')
-    @patch('vya_backupbd.backup.strategy.get_storage_adapter')
+    @patch('python_backup.backup.strategy.get_database_adapter')
+    @patch('python_backup.backup.strategy.get_storage_adapter')
     def test_execute_calls_adapter_with_credentials(self, mock_get_storage, mock_get_adapter):
         """Test that database adapter is called with credentials."""
         db_adapter = MagicMock()
@@ -309,7 +309,7 @@ class TestBackupStrategyFactory:
 class TestBackupStrategyEdgeCases:
     """Test edge cases and error handling."""
 
-    @patch('vya_backupbd.backup.strategy.get_database_adapter')
+    @patch('python_backup.backup.strategy.get_database_adapter')
     def test_execute_with_exception_in_dump(self, mock_get_adapter):
         """Test handling exception during database dump."""
         db_adapter = MagicMock()
@@ -325,8 +325,8 @@ class TestBackupStrategyEdgeCases:
         assert context.status == "failed"
         assert "exception" in context.error_message.lower() or "error" in context.error_message.lower()
 
-    @patch('vya_backupbd.backup.strategy.get_database_adapter')
-    @patch('vya_backupbd.backup.strategy.get_storage_adapter')
+    @patch('python_backup.backup.strategy.get_database_adapter')
+    @patch('python_backup.backup.strategy.get_storage_adapter')
     def test_execute_with_exception_in_upload(self, mock_get_storage, mock_get_adapter):
         """Test handling exception during storage upload."""
         db_adapter = MagicMock()
@@ -352,9 +352,9 @@ class TestBackupStrategyEdgeCases:
         assert result is False
         assert context.status == "failed"
 
-    @patch('vya_backupbd.backup.strategy.get_database_adapter')
-    @patch('vya_backupbd.backup.strategy.get_storage_adapter')
-    @patch('vya_backupbd.backup.strategy.compress_file')
+    @patch('python_backup.backup.strategy.get_database_adapter')
+    @patch('python_backup.backup.strategy.get_storage_adapter')
+    @patch('python_backup.backup.strategy.compress_file')
     def test_execute_compression_failure_continues(self, mock_compress, mock_get_storage, mock_get_adapter):
         """Test that compression failure doesn't stop backup."""
         db_adapter = MagicMock()
