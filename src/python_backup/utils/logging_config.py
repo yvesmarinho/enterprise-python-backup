@@ -20,6 +20,9 @@ def setup_logging(
     """
     Setup logging configuration.
     
+    Uses single log file per day for better log organization and analysis.
+    Multiple executions append to the same daily log file.
+    
     Args:
         console_level: Console log level (INFO, DEBUG, WARNING, ERROR)
         file_level: File log level (INFO, DEBUG, WARNING, ERROR)
@@ -39,8 +42,8 @@ def setup_logging(
         log_path.mkdir(parents=True, exist_ok=True)
         print(f"Warning: No permission to write to {log_dir}, using {log_path}", file=sys.stderr)
     
-    # Generate log filename with date and time
-    log_file = log_path / f"{app_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+    # Generate log filename with date only (one file per day)
+    log_file = log_path / f"{app_name}_{datetime.now().strftime('%Y%m%d')}.log"
     
     # Create root logger
     root_logger = logging.getLogger()
@@ -69,9 +72,10 @@ def setup_logging(
         file_handler.setFormatter(file_formatter)
         root_logger.addHandler(file_handler)
         
-        # Log startup message
+        # Log execution start
         root_logger.info("=" * 80)
-        root_logger.info(f"VYA BackupDB started - Log file: {log_file}")
+        root_logger.info(f"VYA BackupDB execution started at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        root_logger.info(f"Log file: {log_file}")
         root_logger.info("=" * 80)
         
         return str(log_file)

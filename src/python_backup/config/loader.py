@@ -1,13 +1,14 @@
 """
-Configuration loader for vya_backupbd.json
+Configuration loader for config.yaml
 
 Supports vault integration for secure credential management:
 - Primary source: VaultManager (encrypted vault.json.enc)
-- Fallback: JSON configuration file
-- Logging indicates credential source (vault vs JSON)
+- Fallback: JSON/YAML configuration file
+- Logging indicates credential source (vault vs config file)
 """
 
 import json
+import yaml
 import logging
 from dataclasses import dataclass
 from pathlib import Path
@@ -159,7 +160,7 @@ class VyaBackupConfig:
 
     @classmethod
     def from_file(cls, config_path: Path, vault_path: Path | None = None) -> 'VyaBackupConfig':
-        """Load configuration from JSON file."""
+        """Load configuration from YAML or JSON file."""
         logger.debug("=== Função: from_file (VyaBackupConfig) ===")
         logger.debug(f"==> PARAM: config_path TYPE: {type(config_path)}, SIZE: {len(str(config_path))} chars, CONTENT: {config_path}")
         logger.debug(f"==> PARAM: vault_path TYPE: {type(vault_path)}, CONTENT: {vault_path}")
@@ -173,14 +174,18 @@ class VyaBackupConfig:
                 if vault_manager.load():
                     logger.info(f"VaultManager loaded successfully from {vault_path}")
                 else:
-                    logger.warning(f"VaultManager failed to load from {vault_path}, will use JSON fallback")
+                    logger.warning(f"VaultManager failed to load from {vault_path}, will use config file fallback")
                     vault_manager = None
             except Exception as e:
-                logger.warning(f"Failed to initialize VaultManager: {e}, will use JSON fallback")
+                logger.warning(f"Failed to initialize VaultManager: {e}, will use config file fallback")
                 vault_manager = None
 
+        # Load file content based on extension
         with open(config_path, encoding='utf-8') as f:
-            data = json.load(f)
+            if config_path.suffix in ['.yaml', '.yml']:
+                data = yaml.safe_load(f)
+            else:
+                data = json.load(f)
 
         # Parse optional environment configs
         production = None
@@ -331,10 +336,11 @@ def load_config(config_path: Path | None = None, vault_path: Path | None = None)
     Load VYA Backup configuration from JSON file with Vault integration.
 
     Args:
-        config_path: Path to vya_backupbd.json. If None, searches in:
-                     1. Current directory
-                     2. Project root
-                     3. /etc/vya_backupdb/
+        config_path: Path to config.yaml. If None, searches in:
+                     1. config/config.yaml (project config folder)
+                     2. Current directory
+                     3. Project root
+                     4. /etc/vya_backupdb/
         vault_path: Path to vault.json.enc. If None, defaults to .secrets/vault.json.enc
 
     Returns:
@@ -350,6 +356,12 @@ def load_config(config_path: Path | None = None, vault_path: Path | None = None)
     if config_path is None:
         # Try common locations
         search_paths = [
+            Path(__file__).parent.parent.parent / 'config' / 'config.yaml',  # Project config folder
+            Path.cwd() / 'config' / 'config.yaml',
+            Path.cwd() / 'config.yaml',
+            Path(__file__).parent.parent.parent / 'config.yaml',
+            Path('/etc/vya_backupdb/config.yaml'),
+            # Fallback to old format for migration
             Path.cwd() / 'vya_backupbd.json',
             Path(__file__).parent.parent.parent / 'vya_backupbd.json',
             Path('/etc/vya_backupdb/vya_backupbd.json')
@@ -358,12 +370,13 @@ def load_config(config_path: Path | None = None, vault_path: Path | None = None)
         for path in search_paths:
             if path.exists():
                 config_path = path
+                logger.debug(f"Found config file: {config_path}")
                 break
 
         if config_path is None:
             logger.debug("=== Término Função: load_config COM ERRO ===")
             raise FileNotFoundError(
-                "Configuration file vya_backupbd.json not found in standard locations"
+                "Configuration file config.yaml not found in standard locations"
             )
 
     # Default vault path if not specified

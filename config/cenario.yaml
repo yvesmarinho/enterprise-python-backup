@@ -1,0 +1,11 @@
+backup:
+  source:
+    - id: wfdb02-postgres-botpress
+      destiny: /tmp/test_backup/
+    
+    - id: wfdb02-postgres-app_workforce
+      destiny: /tmp/test_backup/
+    
+    - id: wfdb02-mysql
+      destiny: /tmp/test_backup/
+    

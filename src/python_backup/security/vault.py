@@ -227,6 +227,79 @@ class VaultManager:
             logger.error(f"Error setting credential '{credential_id}': {e}", exc_info=True)
             return False
     
+    def set_full(self, credential_id: str, credential_data: Dict[str, Any]) -> bool:
+        """
+        Store or update a full credential with all fields in the vault.
+        
+        Args:
+            credential_id: Unique identifier for the credential
+            credential_data: Full credential data with fields:
+                - type: Database type (mysql/postgresql)
+                - host: Database host
+                - port: Database port
+                - username: Username (will be encrypted)
+                - password: Password (will be encrypted)
+                - database: Optional list of databases
+                - db_ignore: Optional list of databases to ignore
+                - ssl_enabled: Optional SSL flag
+                - description: Optional description
+            
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            from datetime import datetime, timezone
+            
+            # Validate required fields
+            required_fields = ['type', 'host', 'port', 'username', 'password']
+            missing = [f for f in required_fields if f not in credential_data]
+            if missing:
+                logger.error(f"Missing required fields: {missing}")
+                return False
+            
+            # Encrypt username and password
+            encrypted_username = self._encryption.encrypt_string(credential_data['username'])
+            encrypted_password = self._encryption.encrypt_string(credential_data['password'])
+            
+            # Check if updating existing credential
+            is_update = credential_id in self.vault_data["credentials"]
+            action = "Updated" if is_update else "Added"
+            
+            # Get existing created_at or set new one
+            created_at = datetime.now(timezone.utc).isoformat()
+            if is_update and "metadata" in self.vault_data["credentials"][credential_id]:
+                created_at = self.vault_data["credentials"][credential_id]["metadata"].get(
+                    "created_at", created_at
+                )
+            
+            # Store full credential with encrypted sensitive fields
+            self.vault_data["credentials"][credential_id] = {
+                "type": credential_data['type'],
+                "host": credential_data['host'],
+                "port": credential_data['port'],
+                "username": encrypted_username,
+                "password": encrypted_password,
+                "database": credential_data.get('database', []),
+                "db_ignore": credential_data.get('db_ignore', []),
+                "ssl_enabled": credential_data.get('ssl_enabled', False),
+                "metadata": {
+                    "created_at": created_at,
+                    "updated_at": datetime.now(timezone.utc).isoformat(),
+                    "description": credential_data.get('description', '')
+                }
+            }
+            
+            # Invalidate cache for this credential
+            if credential_id in self._cache:
+                del self._cache[credential_id]
+            
+            logger.info(f"{action} full credential '{credential_id}' in vault")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error setting full credential '{credential_id}': {e}", exc_info=True)
+            return False
+    
     def get(self, credential_id: str) -> Optional[Dict[str, str]]:
         """
         Retrieve and decrypt a credential from the vault.

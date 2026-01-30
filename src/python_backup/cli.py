@@ -19,7 +19,7 @@ from rich import print as rprint
 
 from python_backup import __version__
 from python_backup.config.loader import VyaBackupConfig, DatabaseConfig as DBEntry, load_config
-from python_backup.config.models import DatabaseConfig, StorageConfig, BackupConfig
+from python_backup.config.models import DatabaseConfig, StorageConfig, BackupConfig, AppConfig
 from python_backup.backup.context import BackupContext
 from python_backup.backup.executor import BackupExecutor
 from python_backup.restore.context import RestoreContext
@@ -28,6 +28,8 @@ from python_backup.db.engine import get_connection_string
 from python_backup.db.mysql import MySQLAdapter
 from python_backup.db.postgresql import PostgreSQLAdapter
 from python_backup.db.files import FilesAdapter
+from python_backup.backup.strategy import get_database_adapter
+from python_backup.security.vault import VaultManager
 from python_backup.utils.logging_config import setup_logging
 from python_backup.utils.log_sanitizer import safe_repr
 from python_backup.utils.email_sender import EmailSender, EmailConfig as EmailCfg
@@ -43,7 +45,7 @@ logger = logging.getLogger(__name__)
 
 
 def load_vya_config(config_path: Optional[str] = None) -> tuple[VyaBackupConfig, str]:
-    """Load configuration from python_backup.json and setup logging.
+    """Load configuration from config file and setup logging.
     
     Returns:
         Tuple of (config, log_file_path)
@@ -52,6 +54,34 @@ def load_vya_config(config_path: Optional[str] = None) -> tuple[VyaBackupConfig,
     logger.debug(f"==> PARAM: config_path TYPE: {type(config_path)}, CONTENT: {config_path}")
     
     try:
+        # Try loading new format first (config.yaml with AppConfig)
+        if config_path:
+            config_file = Path(config_path)
+        else:
+            # Search for config.yaml
+            search_paths = [
+                Path(__file__).parent.parent.parent / 'config' / 'config.yaml',
+                Path.cwd() / 'config' / 'config.yaml',
+                Path.cwd() / 'config.yaml',
+            ]
+            config_file = None
+            for path in search_paths:
+                if path.exists() and path.suffix in ['.yaml', '.yml']:
+                    config_file = path
+                    break
+        
+        # If YAML config found, we'll use vault directly - return None to signal this
+        if config_file and config_file.exists() and config_file.suffix in ['.yaml', '.yml']:
+            logger.info(f"Found YAML config: {config_file}, will use Vault for credentials")
+            # Setup basic logging
+            log_file = setup_logging(
+                console_level='INFO',
+                file_level='DEBUG',
+                log_dir=Path('logs')
+            )
+            return None, log_file
+        
+        # Fall back to old format (vya_backupbd.json)
         if config_path:
             config = VyaBackupConfig.from_file(Path(config_path))
         else:
@@ -68,13 +98,12 @@ def load_vya_config(config_path: Optional[str] = None) -> tuple[VyaBackupConfig,
         return config, log_file
     except FileNotFoundError:
         console.print("[red]Error:[/red] Configuration file not found")
-        console.print("Searched in: ./vya_backupbd.json, project root, /etc/vya_backupdb/")
+        console.print("Searched in: config/config.yaml, ./config.yaml, project root, /etc/vya_backupdb/")
         logger.debug(f"=== Término Função: load_vya_config COM ERRO ===")
         raise typer.Exit(code=3)
     except Exception as e:
         console.print(f"[red]Error loading config:[/red] {e}")
         logger.debug(f"=== Término Função: load_vya_config COM ERRO ===")
-        raise typer.Exit(code=3)
         raise typer.Exit(code=3)
 
 
@@ -137,8 +166,102 @@ def backup(
     # Start execution timer
     start_time = time.time()
     
-    # Load configuration
-    config, log_file = load_vya_config(config_path)
+    try:
+        # Load configuration
+        config, log_file = load_vya_config(config_path)
+        
+        # If config is None, we're using new YAML format with vault
+        if config is None:
+            if not instance:
+                console.print("[red]Error:[/red] Must specify --instance when using YAML config")
+                raise typer.Exit(code=1)
+            
+            # Load YAML config
+            config_file = Path(__file__).parent.parent.parent / 'config' / 'config.yaml'
+            if not config_file.exists():
+                console.print(f"[red]Error:[/red] Config file not found: {config_file}")
+                raise typer.Exit(code=1)
+            
+            app_config = AppConfig.from_yaml(config_file)
+            
+            # Find database config by id
+            db_entry = None
+            for db in app_config.databases:
+                if db.id == instance:
+                    db_entry = db
+                    break
+            
+            if not db_entry:
+                console.print(f"[red]Error:[/red] Database '{instance}' not found in config")
+                raise typer.Exit(code=1)
+            
+            if not db_entry.enabled:
+                console.print(f"[yellow]Warning:[/yellow] Database '{instance}' is disabled")
+                raise typer.Exit(code=3)
+            
+            # Load credentials from vault
+            vault_manager = VaultManager(Path(".secrets/vault.json.enc"))
+            if not vault_manager.load():
+                console.print("[red]Error:[/red] Failed to load vault")
+                raise typer.Exit(code=1)
+            
+            # Get username/password from vault
+            credential = vault_manager.get(db_entry.credential_name)
+            if not credential:
+                console.print(f"[red]Error:[/red] Credential '{db_entry.credential_name}' not found in vault")
+                raise typer.Exit(code=1)
+            
+            # Combine config + credentials
+            db_config = DatabaseConfig(
+                type=db_entry.type,
+                host=db_entry.host,
+                port=db_entry.port,
+                username=credential['username'],
+                password=credential['password'],
+                database=database or db_entry.database,
+                databases=[db_entry.database] if db_entry.database else [],
+                db_ignore=db_entry.db_ignore,
+                ssl_enabled=db_entry.ssl_enabled if hasattr(db_entry, 'ssl_enabled') else False,
+                ssl_ca_cert=db_entry.ssl_ca_cert if hasattr(db_entry, 'ssl_ca_cert') else None
+            )
+            
+            console.print(f"[cyan]Database ID:[/cyan] {instance}")
+            console.print(f"[cyan]Type:[/cyan] {db_config.type}")
+            console.print(f"[cyan]Host:[/cyan] {db_config.host}:{db_config.port}")
+            console.print(f"[cyan]Database:[/cyan] {database}")
+            console.print(f"[cyan]Output:[/cyan] /tmp/bkp_test/")
+            
+            # Execute backup directly
+            from python_backup.backup.strategy import get_database_adapter
+            adapter = get_database_adapter(db_config)
+            
+            output_dir = Path("/tmp/bkp_test")
+            output_dir.mkdir(parents=True, exist_ok=True)
+            
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            db_name = database or "backup"
+            output_file = output_dir / f"{db_name}_{timestamp}.sql.gz"
+            
+            console.print(f"\n[bold]Starting backup...[/bold]")
+            success = adapter.backup_database(database or db_name, str(output_file))
+            
+            if success:
+                size = output_file.stat().st_size / 1024 / 1024
+                console.print(f"[green]✓ Backup completed:[/green] {output_file} ({size:.2f} MB)")
+                logger.info(f"Backup completed successfully in {time.time() - start_time:.2f} seconds")
+                raise typer.Exit(code=0)
+            else:
+                console.print(f"[red]✗ Backup failed[/red]")
+                logger.error("Backup operation failed")
+                raise typer.Exit(code=1)
+    
+    except KeyboardInterrupt:
+        elapsed = time.time() - start_time
+        console.print(f"\n[yellow]⚠ Backup interrupted by user after {elapsed:.1f} seconds[/yellow]")
+        logger.warning(f"Backup interrupted by user (Ctrl+C) after {elapsed:.2f} seconds")
+        logger.info("=" * 80)
+        raise typer.Exit(code=130)  # Standard exit code for SIGINT
+    
     console.print(f"Log: {log_file}\n")
     
     # Ensure backup directories exist
@@ -438,7 +561,7 @@ def restore_list(
 @app.command()
 def restore(
     file: str = typer.Option(..., "--file", "-f", help="Backup file path"),
-    instance_id: int = typer.Option(..., "--instance", "-i", help="Instance ID from config (id_dbms)"),
+    instance_id: str = typer.Option(..., "--instance", "-i", help="Instance ID (vault credential ID or numeric id_dbms)"),
     target_database: Optional[str] = typer.Option(None, "--target", "-t", help="Target database name (extracted from filename if not provided)"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Test mode (no actual restore)"),
     force: bool = typer.Option(False, "--force", help="Force restore without confirmation"),
@@ -449,7 +572,7 @@ def restore(
     
     Examples:
         vya-backupdb restore --file /tmp/bkpzip/dns_db_20260113_155440.sql.zip --instance 1
-        vya-backupdb restore -f backup.sql.gz -i 2 --target mydb_restored
+        vya-backupdb restore -f backup.sql.gz -i home011-postgres --target mydb_restored
         vya-backupdb restore -f backup.sql.gz -i 1 --dry-run
         vya-backupdb restore -f backup.sql.gz -i 1 --force
     """
@@ -496,10 +619,85 @@ def restore(
     # Load configuration
     config, _ = load_vya_config(config_path)
     
+    # Check if using new YAML format (config is None) or instance_id is a string
+    if config is None or not instance_id.isdigit():
+        # Load YAML config
+        config_file = Path(__file__).parent.parent.parent / 'config' / 'config.yaml'
+        if not config_file.exists():
+            console.print(f"[red]Error:[/red] Config file not found: {config_file}")
+            raise typer.Exit(code=1)
+        
+        app_config = AppConfig.from_yaml(config_file)
+        
+        # Find database config by id
+        db_entry = None
+        for db in app_config.databases:
+            if db.id == instance_id:
+                db_entry = db
+                break
+        
+        if not db_entry:
+            console.print(f"[red]Error:[/red] Database '{instance_id}' not found in config")
+            raise typer.Exit(code=1)
+        
+        if not db_entry.enabled:
+            console.print(f"[yellow]Warning:[/yellow] Database '{instance_id}' is disabled")
+            raise typer.Exit(code=3)
+        
+        # Load credentials from vault
+        from python_backup.security.vault import VaultManager
+        vault_manager = VaultManager(Path(".secrets/vault.json.enc"))
+        if not vault_manager.load():
+            console.print("[red]Error:[/red] Failed to load vault")
+            raise typer.Exit(code=1)
+        
+        # Get username/password from vault
+        credential = vault_manager.get(db_entry.credential_name)
+        if not credential:
+            console.print(f"[red]Error:[/red] Credential '{db_entry.credential_name}' not found in vault")
+            raise typer.Exit(code=1)
+        
+        console.print(f"DBMS: {db_entry.type.upper()}")
+        console.print(f"Host: {db_entry.host}:{db_entry.port}")
+        
+        # Confirm restore unless --force
+        if not force:
+            console.print(f"\n[yellow]⚠ Warning:[/yellow] This will restore database '[cyan]{target_database}[/cyan]'")
+            console.print("This operation may overwrite existing data!")
+            confirm = typer.confirm("Do you want to continue?")
+            if not confirm:
+                console.print("[yellow]Restore cancelled by user[/yellow]")
+                raise typer.Exit(code=0)
+        
+        # Create database config combining YAML + vault
+        db_config = DatabaseConfig(
+            type=db_entry.type,
+            host=db_entry.host,
+            port=db_entry.port,
+            username=credential['username'],
+            password=credential['password'],
+            database=target_database
+        )
+        
+        from python_backup.backup.strategy import get_database_adapter
+        adapter = get_database_adapter(db_config)
+        
+        # Execute restore
+        console.print(f"\n[bold]Starting restore...[/bold]")
+        success = adapter.restore_database(target_database, str(backup_path))
+        
+        if success:
+            console.print(f"[green]✓ Restore completed successfully[/green]")
+            raise typer.Exit(code=0)
+        else:
+            console.print(f"[red]✗ Restore failed[/red]")
+            raise typer.Exit(code=1)
+    
+    # Old path: use legacy config file
     # Find the instance
     instance = None
     for db in config.db_config:
-        if db.id_dbms == instance_id:
+        if db.id_dbms == int(instance_id):
             instance = db
             break
     
@@ -522,9 +720,6 @@ def restore(
     # Create database adapter
     try:
         if instance.dbms.lower() == "mysql":
-            from python_backup.db.mysql import MySQLAdapter
-            from python_backup.config.models import DatabaseConfig
-            
             db_config = DatabaseConfig(
                 type="mysql",
                 host=instance.host,
@@ -534,9 +729,6 @@ def restore(
             )
             adapter = MySQLAdapter(db_config)
         elif instance.dbms.lower() == "postgresql":
-            from python_backup.db.postgresql import PostgreSQLAdapter
-            from python_backup.config.models import DatabaseConfig
-            
             db_config = DatabaseConfig(
                 type="postgresql",
                 host=instance.host,
@@ -664,45 +856,73 @@ def config_show(
 
 @app.command("test-connection")
 def test_connection(
-    instance: str = typer.Option(..., "--instance", "-i", help="Database instance ID"),
-    config_path: Optional[str] = typer.Option(None, "--config", help="Path to config file"),
+    instance: str = typer.Option(..., "--instance", "-i", help="Database instance ID (string identifier from config.yaml)"),
+    config_file: Optional[str] = typer.Option("config/config.yaml", "--config", help="Path to config.yaml file"),
 ):
     """
-    Test database connection.
+    Test database connection using config.yaml + vault.
     
     Examples:
-        vya-backupdb test-connection --instance 1
+        vya-backupdb test-connection --instance app_workforce-postgres-azure
+        vya-backupdb test-connection --instance wfdb02-postgres
     """
     console.print("[bold blue]VYA BackupDB - Connection Test[/bold blue]\n")
     
-    config, _ = load_vya_config(config_path)
-    db_entry = get_database_entry(config, instance)
-    
-    console.print(f"Testing connection to:")
-    console.print(f"  Type: {db_entry.dbms}")
-    console.print(f"  Host: {db_entry.host}:{db_entry.port}")
-    console.print(f"  User: {db_entry.user}\n")
-    
     try:
+        # Load config.yaml
+        config_path = Path(config_file)
+        if not config_path.exists():
+            console.print(f"[red]Error:[/red] Config file not found: {config_file}")
+            raise typer.Exit(code=1)
+        
+        app_config = AppConfig.from_yaml(config_path)
+        
+        # Find database entry
+        db_entry = None
+        for db in app_config.databases:
+            if db.id == instance:
+                db_entry = db
+                break
+        
+        if not db_entry:
+            console.print(f"[red]Error:[/red] Instance '{instance}' not found in {config_file}")
+            raise typer.Exit(code=3)
+        
+        # Load credentials from vault
+        vault_manager = VaultManager(Path(".secrets/vault.json.enc"))
+        if not vault_manager.load():
+            console.print("[red]Error:[/red] Failed to load vault")
+            raise typer.Exit(code=1)
+        
+        # Get username/password from vault
+        credential = vault_manager.get(db_entry.credential_name)
+        if not credential:
+            console.print(f"[red]Error:[/red] Credential '{db_entry.credential_name}' not found in vault")
+            raise typer.Exit(code=1)
+        
+        console.print(f"Testing connection to:")
+        console.print(f"  ID: {db_entry.id}")
+        console.print(f"  Type: {db_entry.type}")
+        console.print(f"  Host: {db_entry.host}:{db_entry.port}")
+        console.print(f"  User: {credential['username']}")
+        console.print(f"  SSL: {getattr(db_entry, 'ssl_enabled', False)}\n")
+        
         # Create database config for connection testing
+        test_database = db_entry.database if db_entry.database else ("information_schema" if db_entry.type == "mysql" else "postgres")
+        
         test_config = DatabaseConfig(
-            type=db_entry.dbms,
+            type=db_entry.type,
             host=db_entry.host,
-            port=int(db_entry.port),
-            username=db_entry.user,
-            password=db_entry.secret,
-            database="information_schema" if db_entry.dbms == "mysql" else "postgres"
+            port=db_entry.port,
+            username=credential['username'],
+            password=credential['password'],
+            database=test_database,
+            ssl_enabled=getattr(db_entry, 'ssl_enabled', False),
+            ssl_ca_cert=getattr(db_entry, 'ssl_ca_cert', None)
         )
         
         # Test connection using adapter
-        if db_entry.dbms == "mysql":
-            adapter = MySQLAdapter(test_config)
-        elif db_entry.dbms == "postgresql":
-            adapter = PostgreSQLAdapter(test_config)
-        else:
-            console.print(f"[red]Unsupported database type:[/red] {db_entry.dbms}")
-            raise typer.Exit(code=1)
-        
+        adapter = get_database_adapter(test_config)
         databases = adapter.get_databases()
         
         console.print("[green]✓ Connection successful![/green]")
@@ -715,6 +935,8 @@ def test_connection(
         
     except Exception as e:
         console.print(f"[red]✗ Connection failed:[/red] {e}")
+        import traceback
+        traceback.print_exc()
         raise typer.Exit(code=1)
 
 
@@ -789,22 +1011,30 @@ def vault_add(
                 
                 for idx, cred in enumerate(credentials, 1):
                     # Validate required fields
-                    if not all(k in cred for k in ['id', 'username', 'password']):
+                    required_fields = ['id', 'username', 'password']
+                    if not all(k in cred for k in required_fields):
                         console.print(f"[yellow]⚠ Skipping entry {idx}: Missing required fields (id, username, password)[/yellow]")
                         failed_count += 1
                         continue
                     
                     cred_id = cred['id']
-                    cred_user = cred['username']
-                    cred_pass = cred['password']
-                    cred_desc = cred.get('description', '')
-                    
                     exists = vault.exists(cred_id)
                     action = "Updating" if exists else "Adding"
                     
                     console.print(f"{action} credential '[cyan]{cred_id}[/cyan]'...")
                     
-                    if vault.set(cred_id, cred_user, cred_pass, cred_desc):
+                    # Check if full credential format (has type, host, port)
+                    if 'type' in cred and 'host' in cred and 'port' in cred:
+                        # Use set_full for complete credential
+                        success = vault.set_full(cred_id, cred)
+                    else:
+                        # Use set for simple username/password
+                        cred_user = cred['username']
+                        cred_pass = cred['password']
+                        cred_desc = cred.get('description', '')
+                        success = vault.set(cred_id, cred_user, cred_pass, cred_desc)
+                    
+                    if success:
                         if exists:
                             updated_count += 1
                         else:

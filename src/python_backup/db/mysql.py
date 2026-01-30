@@ -167,7 +167,8 @@ class MySQLAdapter(DatabaseAdapter):
         try:
             command = self.get_backup_command(database, output_path)
             
-            logger.info(f"Starting backup of database '{database}' to '{output_path}'")
+            logger.info(f"Executing mysqldump for database '{database}'")
+            logger.info(f"Output file: '{output_path}'")
             
             # Execute backup command
             result = subprocess.run(
@@ -179,11 +180,11 @@ class MySQLAdapter(DatabaseAdapter):
             )
             
             if result.returncode == 0:
-                logger.info(f"Backup completed successfully: {database}")
+                logger.info(f"mysqldump completed successfully for database '{database}'")
                 logger.debug(f"=== Término Função: backup_database (MySQLAdapter) ===")
                 return True
             else:
-                logger.error(f"Backup failed: {result.stderr}")
+                logger.error(f"mysqldump FAILED: {result.stderr}")
                 logger.debug(f"=== Término Função: backup_database (MySQLAdapter) COM ERRO ===")
                 return False
                 
@@ -192,8 +193,9 @@ class MySQLAdapter(DatabaseAdapter):
             logger.debug(f"=== Término Função: backup_database (MySQLAdapter) COM ERRO ===")
             return False
             
-        except subprocess.TimeoutExpired:
-            logger.error(f"Backup timeout exceeded for database: {database}")
+        except subprocess.TimeoutExpired as e:
+            timeout_value = e.args[1] if len(e.args) > 1 else 3600
+            logger.error(f"Timeout exceeded during mysqldump for database '{database}' (timeout: {timeout_value}s)")
             logger.debug(f"=== Término Função: backup_database (MySQLAdapter) COM ERRO ===")
             return False
             
@@ -205,6 +207,13 @@ class MySQLAdapter(DatabaseAdapter):
     def restore_database(self, database: str, backup_file: str) -> bool:
         """
         Restore MySQL database from backup file.
+        
+        Disaster Recovery Mode:
+        - Verifies user privileges
+        - Creates database if it doesn't exist
+        - Creates backup user if needed
+        - Grants necessary permissions
+        - Restores database content
         
         Args:
             database: Name of database to restore
@@ -218,11 +227,11 @@ class MySQLAdapter(DatabaseAdapter):
         logger.debug(f"==> PARAM: backup_file TYPE: {type(backup_file)}, SIZE: {len(backup_file)} chars, CONTENT: {backup_file}")
         
         try:
-            logger.info(f"Starting restore of database '{database}' from '{backup_file}'")
+            logger.info(f"[DISASTER RECOVERY] Starting restore of database '{database}' from '{backup_file}'")
             
-            # Create database if it doesn't exist
-            logger.debug(f"Creating database '{database}' if not exists")
-            create_cmd = [
+            # Step 1: Verify server connectivity and privileges
+            logger.info(f"[STEP 1/4] Verifying MySQL server connectivity and privileges...")
+            verify_cmd = [
                 "mysql",
                 f"--user={self.config.username}",
                 f"--password={self.config.password}",
@@ -230,20 +239,122 @@ class MySQLAdapter(DatabaseAdapter):
                 f"--port={self.config.port}",
                 "--protocol=TCP",
                 "-e",
-                f"CREATE DATABASE IF NOT EXISTS `{database}` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+                "SELECT 1;"
             ]
             
-            create_result = subprocess.run(
-                create_cmd,
+            verify_result = subprocess.run(
+                verify_cmd,
                 capture_output=True,
                 text=True,
                 timeout=30
             )
             
-            if create_result.returncode != 0:
-                logger.warning(f"Database creation warning: {create_result.stderr}")
+            if verify_result.returncode != 0:
+                logger.error(f"Cannot connect to MySQL server: {verify_result.stderr}")
+                return False
+            
+            logger.info(f"[STEP 1/4] Connection verified successfully")
+            
+            # Step 2: Check if database exists, create if not
+            logger.info(f"[STEP 2/4] Checking if database '{database}' exists...")
+            check_db_cmd = [
+                "mysql",
+                f"--user={self.config.username}",
+                f"--password={self.config.password}",
+                f"--host={self.config.host}",
+                f"--port={self.config.port}",
+                "--protocol=TCP",
+                "-e",
+                f"SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '{database}';"
+            ]
+            
+            check_result = subprocess.run(
+                check_db_cmd,
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+            
+            db_exists = database in check_result.stdout
+            
+            if not db_exists:
+                logger.info(f"[STEP 2/4] Database '{database}' does not exist, creating...")
+                create_cmd = [
+                    "mysql",
+                    f"--user={self.config.username}",
+                    f"--password={self.config.password}",
+                    f"--host={self.config.host}",
+                    f"--port={self.config.port}",
+                    "--protocol=TCP",
+                    "-e",
+                    f"CREATE DATABASE `{database}` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+                ]
+                
+                create_result = subprocess.run(
+                    create_cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=30
+                )
+                
+                if create_result.returncode != 0:
+                    logger.error(f"Failed to create database: {create_result.stderr}")
+                    return False
+                
+                logger.info(f"[STEP 2/4] Database '{database}' created successfully")
             else:
-                logger.debug(f"Database '{database}' ready for restore")
+                logger.info(f"[STEP 2/4] Database '{database}' already exists")
+            
+            # Step 3: Check and create backup user if needed
+            logger.info(f"[STEP 3/4] Verifying backup user exists...")
+            check_user_cmd = [
+                "mysql",
+                f"--user={self.config.username}",
+                f"--password={self.config.password}",
+                f"--host={self.config.host}",
+                f"--port={self.config.port}",
+                "--protocol=TCP",
+                "-e",
+                f"SELECT User FROM mysql.user WHERE User = 'backup';"
+            ]
+            
+            user_result = subprocess.run(
+                check_user_cmd,
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+            
+            if 'backup' not in user_result.stdout:
+                logger.info(f"[STEP 3/4] Creating backup user...")
+                # Note: In production, password should be configurable
+                create_user_cmd = [
+                    "mysql",
+                    f"--user={self.config.username}",
+                    f"--password={self.config.password}",
+                    f"--host={self.config.host}",
+                    f"--port={self.config.port}",
+                    "--protocol=TCP",
+                    "-e",
+                    f"CREATE USER IF NOT EXISTS 'backup'@'%' IDENTIFIED BY 'BackupUser2026!'; GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, SHOW VIEW, CREATE ROUTINE, ALTER ROUTINE, EVENT, TRIGGER ON `{database}`.* TO 'backup'@'%'; FLUSH PRIVILEGES;"
+                ]
+                
+                user_create_result = subprocess.run(
+                    create_user_cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=30
+                )
+                
+                if user_create_result.returncode == 0:
+                    logger.info(f"[STEP 3/4] Backup user created with permissions on '{database}'")
+                else:
+                    logger.warning(f"[STEP 3/4] Could not create backup user: {user_create_result.stderr}")
+            else:
+                logger.info(f"[STEP 3/4] Backup user already exists")
+            
+            # Step 4: Restore database
+            logger.info(f"[STEP 4/4] Starting database restore...")
             
             # Build mysql command
             cmd_parts = [
@@ -252,7 +363,8 @@ class MySQLAdapter(DatabaseAdapter):
                 f"--password={self.config.password}",
                 f"--host={self.config.host}",
                 f"--port={self.config.port}",
-                "--protocol=TCP"
+                "--protocol=TCP",
+                f"--database={database}"
             ]
             
             # Extract original database name from SQL to replace it
