@@ -92,6 +92,12 @@ Thumbs.db
 *~
 .#*
 
+# Environment files with sensitive data
+.env
+*.env
+tmp/.env
+config/.env
+
 # Database files (for local testing)
 *.db
 *.sqlite

@@ -118,7 +118,7 @@ class TestDatabaseSorting:
         
         return config
 
-    def test_databases_sorted_by_default(self, config_with_multiple_databases):
+    def test_databases_sorted_by_default(self, config_with_multiple_databases: VyaBackupConfig):
         """Test that get_enabled_databases returns sorted list by default"""
         databases = config_with_multiple_databases.get_enabled_databases()
         
@@ -149,7 +149,7 @@ class TestDatabaseSorting:
         assert databases[-1].host == "zebra-server.com"
         assert databases[-1].dbms == "mysql"
 
-    def test_databases_unsorted_when_requested(self, config_with_multiple_databases):
+    def test_databases_unsorted_when_requested(self, config_with_multiple_databases: VyaBackupConfig):
         """Test that sort=False returns databases in original order"""
         databases = config_with_multiple_databases.get_enabled_databases(sort=False)
         
@@ -173,7 +173,7 @@ class TestDatabaseSorting:
         assert databases[5].host == "192.168.1.100"
         assert databases[5].id_dbms == 6
 
-    def test_sorted_databases_case_insensitive(self, config_with_multiple_databases):
+    def test_sorted_databases_case_insensitive(self, config_with_multiple_databases: VyaBackupConfig):
         """Test that sorting is case-insensitive"""
         databases = config_with_multiple_databases.get_enabled_databases(sort=True)
         
@@ -192,7 +192,7 @@ class TestDatabaseSorting:
             next_host = databases[charlie_index + 1].host.lower()
             assert charlie_db.host.lower() <= next_host
 
-    def test_sorted_databases_secondary_sort_by_dbms(self, config_with_multiple_databases):
+    def test_sorted_databases_secondary_sort_by_dbms(self, config_with_multiple_databases: VyaBackupConfig):
         """Test that databases with same host are sorted by dbms type"""
         databases = config_with_multiple_databases.get_enabled_databases(sort=True)
         
@@ -240,7 +240,7 @@ class TestDatabaseSorting:
         databases = config.get_enabled_databases(sort=True)
         assert databases == []
 
-    def test_all_databases_disabled(self, config_with_multiple_databases):
+    def test_all_databases_disabled(self, config_with_multiple_databases: VyaBackupConfig):
         """Test that disabled databases are excluded from sorted list"""
         # Disable all databases
         for db in config_with_multiple_databases.db_config:

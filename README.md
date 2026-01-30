@@ -989,14 +989,14 @@ Edite `python_backup.json`:
       "host": "localhost",
       "port": 3306,
       "user": "backup_user",
-      "password_encrypted": "aGFzaF9kYV9zZW5oYV9hcXVp"
+      "password_encrypted": "<BASE64_ENCRYPTED_PASSWORD_HERE>"
     },
     "postgresql": {
       "enabled": true,
       "host": "localhost",
       "port": 5432,
       "user": "backup_user",
-      "password_encrypted": "aGFzaF9kYV9zZW5oYV9hcXVp"
+      "password_encrypted": "<BASE64_ENCRYPTED_PASSWORD_HERE>"
     }
   },
   "paths": {

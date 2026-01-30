@@ -1,0 +1,4 @@
+tmp/.env
+.secrets/journey-test.json
+.secrets/journey-dev.json
+.secrets/vya_backupbd.json
